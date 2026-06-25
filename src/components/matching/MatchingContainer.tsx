@@ -1,0 +1,623 @@
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Shield, Lock, Unlock, Phone, Heart, Users, RefreshCw, Send, AlertTriangle, Eye, Compass, X } from 'lucide-react';
+import Matter from 'matter-js';
+
+// 번역 데이터 (ko / ja)
+const TRANSLATIONS = {
+  ko: {
+    matchingTitle: 'AI 가치관 매칭 터널',
+    searching: '가치관 부합 대상 탐색 중...',
+    matchSuccess: '🎉 매칭 성공! 신원 검증 메이트 연결됨',
+    compatScore: '가치관 호합도',
+    radarTitle: '📊 4분면 가치관 부합 분석',
+    aiAdvice: '💡 AI 매칭 분석 조언',
+    badgeTitle: '🛡️ 상대 메이트의 신뢰 배지',
+    badgeRequest: '🔒 상호주의 정보 공개 요청',
+    badgeDesc: '상대방에게 배지 잠금 해제 동의 요청을 발송합니다. 상호주의 원칙에 따라 본인의 배지도 공개됩니다.',
+    sendRequest: '공손한 경어체로 요청 발송 🚀',
+    cancel: '취소',
+    verified: '검증 완료',
+    masked: '상호 동의 후 공개',
+    chatPlaceholder: '대화를 입력하세요 (AI 실시간 스캠 감시 작동 중)',
+    send: '전송',
+    scamWarning: '🚨 AI 실시간 감시: 금전 정보 요구 및 양도 절대 금지!',
+    burnoutTitle: '소개팅 앱 번아웃 원인과 하나-일 대안 (드래그해 보세요)',
+    upgradeBtn: '프리미엄 회원 업그레이드 (인증 배지 필터 활성화)',
+    premiumStatus: '👑 프리미엄 회원 활성화됨',
+    startMatchingBtn: '매칭 풀 대기열 합류하기',
+    matchingQueueDesc: 'Firebase 인증 및 본인 확인 검증 완료 회원 대상 실시간 매칭',
+  },
+  ja: {
+    matchingTitle: 'AI 価値観マッチングトンネル',
+    searching: '価値観適合メンバーを探索中...',
+    matchSuccess: '🎉 マッチング成立！本人確認済みメイト接続',
+    compatScore: '価値観適合度',
+    radarTitle: '📊 4象限価値観適合度分析',
+    aiAdvice: '💡 AIマッチングアドバイス',
+    badgeTitle: '🛡️ 相手メイトの信頼バッジ',
+    badgeRequest: '🔒 相互主義バッジ公開リクエスト',
+    badgeDesc: '相手にバッジロック解除同意リクエストを送信します。相互主義の原則に基づき、自身のバッジも公開されます。',
+    sendRequest: '敬語でリクエスト送信 🚀',
+    cancel: 'キャンセル',
+    verified: '検証済み',
+    masked: '相互同意後に開示',
+    chatPlaceholder: 'メッセージを入力してください（AIスキャン監視作動中）',
+    send: '送信',
+    scamWarning: '🚨 AI監視: 金銭のやり取りや個人情報の受け渡しは固く禁じられています！',
+    burnoutTitle: 'マッチングアプリのバーンアウト原因と解決策 (ドラッグ可能)',
+    upgradeBtn: 'プレミアム会員アップグレード (認証バッジフィルター有効化)',
+    premiumStatus: '👑 プレミアム会員アクティブ',
+    startMatchingBtn: 'マッチングプール待機列に合流',
+    matchingQueueDesc: 'Firebase認証および本人確認審査済みの会員対象リアルタイムマッチング',
+  }
+};
+
+const MOCK_MATE = {
+  name: 'Haruka (하루카)',
+  age: 26,
+  location: 'Tokyo, Japan 🇯🇵',
+  matchRate: 94,
+  avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&q=80&w=200',
+  aiAdvice: '거주지(일본 이주)에 대해 약간의 조율이 필요하나, 자녀 계획과 종교관이 극도로 일치합니다. 상대방에게 따뜻하게 먼저 인사를 건네보세요.',
+  aiAdviceJa: '居住地（日本移住）について少し調整が必要ですが、将来設計と宗教観が非常に一致しています。相手に温かく話しかけてみてください。',
+  badges: [
+    { id: 'identity', label: '미혼 인증 (Single)', key: 'maritalStatusVerified', expired: '3개월' },
+    { id: 'job', label: '직장 인증 (Job)', key: 'employmentVerified', expired: '6개월' },
+    { id: 'education', label: '학력 인증 (Education)', key: 'educationVerified', expired: '무제한' },
+  ],
+  radar: {
+    x1: 85, // 가치관 일치
+    y1: 90, // 의사소통
+    x2: 75, // 미래 설계
+    y2: 88, // 문화 호환성
+  }
+};
+
+interface MatchingContainerProps {
+  user: any;
+}
+
+export default function MatchingContainer({ user: _user }: MatchingContainerProps) {
+  const [lang, setLang] = useState<'ko' | 'ja'>('ko');
+  const [isSearching, setIsSearching] = useState(false);
+  const [matchFound, setMatchFound] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
+  const [badgesUnlocked, setBadgesUnlocked] = useState<Record<string, boolean>>({});
+  
+  // 모달 상태
+  const [requestModalOpen, setRequestModalOpen] = useState(false);
+  const [selectedBadge, setSelectedBadge] = useState<any>(null);
+  
+  // 채팅 상태
+  const [messages, setMessages] = useState<Array<{ sender: 'user' | 'mate' | 'system', text: string }>>([]);
+  const [inputVal, setInputVal] = useState('');
+  const [scamAlert, setScamAlert] = useState(false);
+
+  // Matter.js 관련 ref
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const engineRef = useRef<Matter.Engine | null>(null);
+
+  const t = (key: keyof typeof TRANSLATIONS.ko) => {
+    return TRANSLATIONS[lang][key] || TRANSLATIONS.ko[key];
+  };
+
+  // 매칭 검색 시뮬레이션
+  const startSearch = () => {
+    setIsSearching(true);
+    setMatchFound(false);
+    setBadgesUnlocked({});
+    setScamAlert(false);
+    setMessages([]);
+    
+    setTimeout(() => {
+      setIsSearching(false);
+      setMatchFound(true);
+      setMessages([
+        { sender: 'system', text: lang === 'ko' ? '🔒 안전한 종단간 암호화 터널이 활성화되었습니다.' : '🔒 安全なエンドツーエンド暗号化トンネルが有効化されました。' },
+        { sender: 'mate', text: lang === 'ko' ? '안녕하세요! 반갑습니다. 가치관 매칭으로 연결되었네요 😊' : 'こんにちは！はじめまして。価値観マッチングで繋がりましたね 😊' }
+      ]);
+    }, 3000);
+  };
+
+  // 채팅 전송
+  const sendMessage = () => {
+    if (!inputVal.trim()) return;
+    const userMsg = inputVal.toLowerCase();
+    
+    const newMsgs = [...messages, { sender: 'user' as const, text: inputVal }];
+    setMessages(newMsgs);
+    setInputVal('');
+
+    // 실시간 AI 스캠 감시 기능 (금전 유도 감지)
+    if (userMsg.includes('돈') || userMsg.includes('계좌') || userMsg.includes('송금') || userMsg.includes('money') || userMsg.includes('bank') || userMsg.includes('gift') || userMsg.includes('기프트')) {
+      setScamAlert(true);
+    }
+
+    // 상대방 자동 답변 시뮬레이션
+    setTimeout(() => {
+      setMessages(prev => [
+        ...prev,
+        { sender: 'mate', text: lang === 'ko' ? '가치관 분석 그래프를 봤는데 저희 성향이 정말 비슷하게 나왔어요!' : '価値観分析グラフを見ましたが、私たちの相性が本当にそっくりですね！' }
+      ]);
+    }, 1500);
+  };
+
+  // 배지 공개 동의 요청 발송
+  const sendBadgeRequest = () => {
+    if (!selectedBadge) return;
+    setBadgesUnlocked(prev => ({ ...prev, [selectedBadge.id]: true }));
+    setRequestModalOpen(false);
+    
+    // 시스템 알림 메시지 추가
+    setMessages(prev => [
+      ...prev,
+      { sender: 'system', text: `🔓 [상호주의] 상대방과 나의 '${selectedBadge.label}' 정보가 교환되어 잠금 해제되었습니다.` }
+    ]);
+  };
+
+  // Matter.js 피지컬 샌드박스 설정
+  useEffect(() => {
+    if (!sceneRef.current) return;
+
+    // 기존 엔진 청소
+    if (engineRef.current) {
+      Matter.World.clear(engineRef.current.world, false);
+      Matter.Engine.clear(engineRef.current);
+    }
+
+    const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint } = Matter;
+
+    const width = sceneRef.current.clientWidth || 600;
+    const height = 300;
+
+    const engine = Engine.create({
+      gravity: { y: 0.8 }
+    });
+    engineRef.current = engine;
+
+    const render = Render.create({
+      element: sceneRef.current,
+      engine: engine,
+      options: {
+        width,
+        height,
+        wireframes: false,
+        background: '#181524',
+      }
+    });
+
+    Render.run(render);
+
+    const runner = Runner.create();
+    Runner.run(runner, engine);
+
+    // 경계 벽 생성
+    const wallOptions = { isStatic: true, render: { visible: false } };
+    const ground = Bodies.rectangle(width / 2, height + 30, width * 2, 60, wallOptions);
+    const leftWall = Bodies.rectangle(-30, height / 2, 60, height * 2, wallOptions);
+    const rightWall = Bodies.rectangle(width + 30, height / 2, 60, height * 2, wallOptions);
+    const ceiling = Bodies.rectangle(width / 2, -30, width * 2, 60, wallOptions);
+
+    Composite.add(engine.world, [ground, leftWall, rightWall, ceiling]);
+
+    // 번아웃 원인 블록 (빨간색/보라색 톤)
+    const burnoutItems = [
+      { text: lang === 'ko' ? '성비 8:2 스와이프 피로' : '性比8:2スワイプ疲労', fill: '#FF5252' },
+      { text: lang === 'ko' ? '외모/스펙 줄세우기' : '外見・スペック並べ', fill: '#E040FB' },
+      { text: lang === 'ko' ? '가짜 프로필/스캠' : 'サクラ・ロマンス詐欺', fill: '#FF1744' },
+    ];
+
+    // 하나-일 대안 블록 (사쿠라 코랄 핑크 & 에메랄드 톤)
+    const alternativeItems = [
+      { text: lang === 'ko' ? '미혼/재직 서류 인증' : '独身・仕事公認書類認証', fill: '#FF8A80' },
+      { text: lang === 'ko' ? '가치관 세미 블라인드' : '価値観ブラインドマッチ', fill: '#00E5FF' },
+      { text: lang === 'ko' ? '상호주의 배지 공개' : '相互主義バッジ開示', fill: '#69F0AE' },
+    ];
+
+    const blocks: Matter.Body[] = [];
+
+    // 블록 생성 함수
+    const createBlock = (text: string, x: number, y: number, color: string) => {
+      const w = text.length * 12 + 20;
+      const h = 40;
+      const block = Bodies.rectangle(x, y, w, h, {
+        restitution: 0.6,
+        friction: 0.3,
+        render: {
+          fillStyle: color,
+          strokeStyle: '#ffffff',
+          lineWidth: 1
+        }
+      });
+      // 렌더링 시 텍스트 보존을 위한 속성 추가
+      (block as any).customText = text;
+      return block;
+    };
+
+    burnoutItems.forEach((item, idx) => {
+      const block = createBlock(item.text, width / 4 + idx * 40, 50, item.fill);
+      blocks.push(block);
+    });
+
+    alternativeItems.forEach((item, idx) => {
+      const block = createBlock(item.text, (width * 3) / 4 - idx * 40, 80, item.fill);
+      blocks.push(block);
+    });
+
+    Composite.add(engine.world, blocks);
+
+    // 마우스 드래그 컨트롤 추가
+    const mouse = Mouse.create(render.canvas);
+    const mouseConstraint = MouseConstraint.create(engine, {
+      mouse: mouse,
+      constraint: {
+        stiffness: 0.2,
+        render: { visible: false }
+      }
+    });
+
+    Composite.add(engine.world, mouseConstraint);
+    render.mouse = mouse;
+
+    // Matter.js 캔버스 위에 글자 그리기 이벤트 연동
+    Matter.Events.on(render, 'afterRender', () => {
+      const context = render.context;
+      context.font = 'bold 12px monospace';
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+
+      const bodies = Composite.allBodies(engine.world);
+      bodies.forEach(body => {
+        const text = (body as any).customText;
+        if (text) {
+          context.save();
+          context.translate(body.position.x, body.position.y);
+          context.rotate(body.angle);
+          context.fillStyle = '#0D0B14'; // 다크 텍스트로 블록 내부 선명도 증가
+          context.fillText(text, 0, 0);
+          context.restore();
+        }
+      });
+    });
+
+    return () => {
+      Render.stop(render);
+      Runner.stop(runner);
+      if (engineRef.current) {
+        Matter.Engine.clear(engineRef.current);
+      }
+    };
+  }, [lang]);
+
+  return (
+    <div className="w-full min-h-screen bg-md3-background text-white px-4 py-8 flex flex-col items-center">
+      {/* 상단 랭귀지 토글 & 멤버십 현황 */}
+      <div className="w-full max-w-5xl flex justify-between items-center mb-8 border-b border-white/10 pb-4">
+        <div className="flex items-center gap-3">
+          <Shield className="text-md3-primary animate-pulse" size={24} />
+          <h1 className="text-xl font-bold tracking-tight uppercase">{t('matchingTitle')}</h1>
+        </div>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setLang(l => (l === 'ko' ? 'ja' : 'ko'))}
+            className="px-3 py-1.5 rounded bg-md3-surface border border-white/20 hover:bg-white/10 text-xs transition-colors"
+          >
+            {lang === 'ko' ? '日本語 🇯🇵' : '한국어 🇰🇷'}
+          </button>
+          
+          <button
+            onClick={() => setIsPremium(p => !p)}
+            className={`px-3 py-1.5 rounded text-xs font-semibold tracking-wide transition-all ${
+              isPremium 
+                ? 'bg-gradient-to-r from-yellow-500 to-amber-600 text-black' 
+                : 'bg-md3-surface text-white border border-white/20 hover:border-md3-primary'
+            }`}
+          >
+            {isPremium ? t('premiumStatus') : t('upgradeBtn')}
+          </button>
+        </div>
+      </div>
+
+      {/* 실시간 매칭 상태 창 */}
+      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+        
+        {/* 왼쪽 영역: 매칭 검색기 & 상대방 매칭 정보 카드 */}
+        <div className="lg:col-span-7 flex flex-col gap-6">
+          
+          {/* 매칭 컨트롤러 */}
+          <div className="p-6 rounded-2xl bg-md3-surface border border-white/10 flex flex-col items-center text-center">
+            <Compass className={`text-md3-accent mb-4 ${isSearching ? 'animate-spin' : ''}`} size={44} />
+            <h2 className="text-lg font-medium mb-2">{isSearching ? t('searching') : t('matchingTitle')}</h2>
+            <p className="text-xs text-white/50 mb-6 max-w-md">{t('matchingQueueDesc')}</p>
+            
+            <button
+              onClick={startSearch}
+              disabled={isSearching}
+              className="px-8 py-3 rounded-lg bg-md3-primary text-black font-semibold hover:bg-md3-primary/80 transition-colors flex items-center gap-2"
+            >
+              <RefreshCw size={16} className={isSearching ? 'animate-spin' : ''} />
+              {t('startMatchingBtn')}
+            </button>
+          </div>
+
+          {/* 상대방 매칭 카드 */}
+          {matchFound && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-6 rounded-2xl bg-md3-surface border border-white/20 flex flex-col gap-6 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 bg-md3-accent text-black font-bold px-4 py-1.5 rounded-bl-xl text-sm flex items-center gap-1">
+                <Heart size={14} className="fill-current" />
+                {MOCK_MATE.matchRate}%
+              </div>
+
+              {/* 기본 프로필 */}
+              <div className="flex gap-4 items-center">
+                <img 
+                  src={MOCK_MATE.avatar} 
+                  alt={MOCK_MATE.name} 
+                  className="w-16 h-16 rounded-full object-cover border-2 border-md3-primary"
+                />
+                <div>
+                  <h3 className="text-lg font-bold flex items-center gap-2">
+                    {MOCK_MATE.name}
+                    <span className="text-sm font-normal text-white/60">{MOCK_MATE.age}세</span>
+                  </h3>
+                  <p className="text-xs text-white/40">{MOCK_MATE.location}</p>
+                </div>
+              </div>
+
+              {/* AI 조언 */}
+              <div className="p-4 rounded-xl bg-md3-background border border-white/5">
+                <h4 className="text-xs font-semibold text-md3-accent uppercase tracking-wider mb-1">{t('aiAdvice')}</h4>
+                <p className="text-xs text-white/70 leading-relaxed">
+                  {lang === 'ko' ? MOCK_MATE.aiAdvice : MOCK_MATE.aiAdviceJa}
+                </p>
+              </div>
+
+              {/* 4분면 SVG 레이더 호합도 차트 */}
+              <div className="p-4 rounded-xl bg-md3-background border border-white/5 flex flex-col items-center">
+                <h4 className="text-xs font-semibold text-white/60 mb-4">{t('radarTitle')}</h4>
+                <div className="relative w-48 h-48 border border-white/10 rounded-full flex items-center justify-center">
+                  {/* 축 표시 */}
+                  <div className="absolute w-full h-[1px] bg-white/10" />
+                  <div className="absolute h-full w-[1px] bg-white/10" />
+                  
+                  {/* 라벨 */}
+                  <span className="absolute -top-5 text-[9px] text-white/40">가치관</span>
+                  <span className="absolute -bottom-5 text-[9px] text-white/40">미래설계</span>
+                  <span className="absolute -left-10 text-[9px] text-white/40">의사소통</span>
+                  <span className="absolute -right-12 text-[9px] text-white/40">문화호환</span>
+
+                  {/* 레이더 도형 그리기 */}
+                  <svg className="absolute w-full h-full pointer-events-none" viewBox="0 0 200 200">
+                    <polygon
+                      points={`
+                        100,${100 - MOCK_MATE.radar.x1 * 0.8} 
+                        ${100 + MOCK_MATE.radar.y2 * 0.8},100 
+                        100,${100 + MOCK_MATE.radar.y1 * 0.8} 
+                        ${100 - MOCK_MATE.radar.x2 * 0.8},100
+                      `}
+                      fill="rgba(255, 138, 128, 0.25)"
+                      stroke="#FF8A80"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                </div>
+              </div>
+
+              {/* 신뢰 배지 세션 */}
+              <div>
+                <h4 className="text-xs font-semibold text-white/60 mb-3">{t('badgeTitle')}</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {MOCK_MATE.badges.map(badge => {
+                    const isUnlocked = badgesUnlocked[badge.id];
+                    return (
+                      <div 
+                        key={badge.id} 
+                        className={`p-3 rounded-lg border flex flex-col justify-between h-20 transition-all ${
+                          isUnlocked 
+                            ? 'bg-md3-primary/10 border-md3-primary' 
+                            : 'bg-md3-surface border-white/10'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <span className="text-[11px] font-medium text-white/80">{badge.label}</span>
+                          {isUnlocked ? (
+                            <Unlock size={12} className="text-md3-primary" />
+                          ) : (
+                            <Lock size={12} className="text-white/40" />
+                          )}
+                        </div>
+                        
+                        {isUnlocked ? (
+                          <div className="flex items-center gap-1 mt-2 text-[10px] text-md3-primary">
+                            <span className="w-1.5 h-1.5 rounded-full bg-md3-primary animate-ping" />
+                            {t('verified')} ({badge.expired})
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setSelectedBadge(badge);
+                              setRequestModalOpen(true);
+                            }}
+                            className="w-full py-1 mt-2 rounded bg-white/5 border border-white/10 text-[9px] hover:bg-white/10 transition-colors flex items-center justify-center gap-1"
+                          >
+                            <Eye size={10} />
+                            {t('badgeRequest')}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+            </motion.div>
+          )}
+
+        </div>
+
+        {/* 오른쪽 영역: 실시간 보안 안심 대화 터널 (채팅창) */}
+        <div className="lg:col-span-5 flex flex-col">
+          <div className="h-full min-h-[450px] rounded-2xl bg-md3-surface border border-white/10 flex flex-col overflow-hidden">
+            
+            {/* 채팅 헤더 */}
+            <div className="px-6 py-4 border-b border-white/10 bg-md3-background flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+                <span className="text-xs font-semibold tracking-wider text-white/60">SECURE TUNNEL</span>
+              </div>
+              <div className="flex gap-2">
+                <Phone size={14} className="text-white/40 hover:text-white transition-colors cursor-pointer" />
+              </div>
+            </div>
+
+            {/* 채팅 내용 영역 */}
+            <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-4 max-h-[350px]">
+              {messages.length === 0 ? (
+                <div className="text-center text-xs text-white/30 my-auto">
+                  {lang === 'ko' ? '매칭 대기열에 합류하여 대화를 나누어보세요.' : 'マッチング待機列に参加して会話を始めてみましょう。'}
+                </div>
+              ) : (
+                messages.map((msg, index) => (
+                  <div 
+                    key={index}
+                    className={`flex flex-col ${
+                      msg.sender === 'user' 
+                        ? 'items-end' 
+                        : msg.sender === 'system' 
+                        ? 'items-center' 
+                        : 'items-start'
+                    }`}
+                  >
+                    {msg.sender === 'system' ? (
+                      <div className="px-3 py-1 rounded bg-white/5 border border-white/10 text-[9px] text-white/50 text-center">
+                        {msg.text}
+                      </div>
+                    ) : (
+                      <div 
+                        className={`max-w-[80%] p-3 rounded-2xl text-xs leading-relaxed ${
+                          msg.sender === 'user'
+                            ? 'bg-md3-primary text-black font-medium rounded-tr-none'
+                            : 'bg-md3-background text-white rounded-tl-none border border-white/10'
+                        }`}
+                      >
+                        {msg.text}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* AI 스캠 경고 배너 */}
+            {scamAlert && (
+              <div className="bg-red-500/10 border-y border-red-500/20 px-4 py-2 flex items-center gap-2">
+                <AlertTriangle className="text-red-500 shrink-0" size={16} />
+                <span className="text-[10px] text-red-400 font-medium">{t('scamWarning')}</span>
+              </div>
+            )}
+
+            {/* 채팅 입력 */}
+            <div className="p-4 bg-md3-background border-t border-white/10 flex gap-2">
+              <input
+                type="text"
+                value={inputVal}
+                onChange={e => setInputVal(e.target.value)}
+                placeholder={t('chatPlaceholder')}
+                disabled={!matchFound}
+                onKeyDown={e => e.key === 'Enter' && sendMessage()}
+                className="flex-1 bg-md3-surface border border-white/10 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-md3-primary disabled:opacity-50 text-white"
+              />
+              <button
+                onClick={sendMessage}
+                disabled={!matchFound}
+                className="p-2.5 rounded-lg bg-md3-primary text-black disabled:opacity-50 hover:bg-md3-primary/80 transition-colors"
+              >
+                <Send size={14} />
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      {/* 하단부: Matter.js 피지컬 샌드박스 영역 */}
+      <div className="w-full max-w-5xl rounded-2xl bg-md3-surface border border-white/10 p-6">
+        <h3 className="text-xs font-semibold text-white/50 uppercase tracking-widest mb-4 flex items-center gap-2">
+          <Users size={14} />
+          {t('burnoutTitle')}
+        </h3>
+        
+        <div 
+          ref={sceneRef} 
+          className="w-full h-[300px] rounded-xl overflow-hidden border border-white/10 relative"
+        />
+      </div>
+
+      {/* 상호주의 정보 공개 요청 모달 */}
+      <AnimatePresence>
+        {requestModalOpen && selectedBadge && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* 백드롭 */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setRequestModalOpen(false)}
+              className="absolute inset-0 bg-black"
+            />
+            
+            {/* 다이얼로그 */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative bg-md3-surface border border-white/20 p-6 rounded-2xl max-w-md w-full z-10"
+            >
+              <button 
+                onClick={() => setRequestModalOpen(false)}
+                className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors"
+              >
+                <X size={16} />
+              </button>
+
+              <h3 className="text-base font-bold mb-2 flex items-center gap-2">
+                <Lock size={16} className="text-md3-primary" />
+                {t('badgeRequest')}
+              </h3>
+
+              <div className="p-3 bg-md3-primary/10 rounded-lg text-md3-primary text-xs font-semibold mb-4">
+                요청 배지: {selectedBadge.label}
+              </div>
+
+              <p className="text-xs text-white/60 leading-relaxed mb-6">
+                {t('badgeDesc')}
+              </p>
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setRequestModalOpen(false)}
+                  className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-xs hover:bg-white/10 transition-colors"
+                >
+                  {t('cancel')}
+                </button>
+                
+                <button
+                  onClick={sendBadgeRequest}
+                  className="px-5 py-2 rounded-lg bg-md3-primary text-black font-semibold text-xs hover:bg-md3-primary/80 transition-colors"
+                >
+                  {t('sendRequest')}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
