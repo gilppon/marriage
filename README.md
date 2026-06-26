@@ -1,397 +1,129 @@
-# Connect AI LAB — 웹사이트 템플릿 사용 설명서
+# 🌸 Best-Saiko Match (Premium Korea-Japan Matching Service)
 
-> 🧠 프리미엄 랜딩 페이지 + Firebase 인증 + PayPal/토스 결제 — 올인원 템플릿
-
----
-
-## 📌 이 템플릿으로 무엇을 할 수 있나요?
-
-이 템플릿은 **디지털 상품, SaaS, AI 서비스, 온라인 강의** 등을 판매하는 
-웹사이트를 빠르게 만들 수 있도록 설계되었습니다.
-
-| 기능 | 설명 |
-|------|------|
-| 🎬 **풀스크린 비디오 랜딩** | 영상 배경 + 스크롤 애니메이션으로 고급스러운 첫인상 |
-| 🔐 **회원 인증 (Firebase)** | Google, Apple, 이메일 로그인/회원가입 |
-| 💳 **해외 결제 (PayPal)** | 일회성 구매 + 구독 결제 — 전 세계 대응 |
-| 🇰🇷 **국내 결제 (토스페이먼츠)** | 카드, 계좌이체, 가상계좌 — 한국 고객 대응 |
-| 📊 **데이터베이스 (Firestore)** | 회원 정보, 주문 기록, 구독 상태 자동 저장 |
-| ✨ **프리미엄 애니메이션** | Framer Motion 텍스트 스크램블, 3D 스크롤, 페이드인 |
-
-### 활용 예시
-
-- AI 서비스 랜딩 + 유료 플랜 결제
-- 온라인 강의 판매 페이지
-- 디지털 상품 (이북, 소프트웨어) 판매
-- SaaS 제품 소개 + 구독 결제
-- 포트폴리오 사이트 + 유료 컨설팅 예약
+> **Best-Saiko Match**는 대한민국과 일본의 프리미엄 싱글들을 위한 가치관 분석 기반의 1:1 매칭 웹 애플리케이션입니다. 
+> 고도의 신원 인증 체계(eKYC), 실시간 대화 감시(AI Shield), 초저지연 WebSocket 통화 게이트웨이 및 글로벌 다국어(한국어/일본어) 환경을 단일 모놀리식 서버 구조에서 제공합니다.
 
 ---
 
-## 🚀 시작하기 (5분 안에 실행)
+## 🚀 주요 기능 (Key Features)
 
-### Step 1. 파일 다운로드 후 설치
+### 1. 🌐 글로벌 실시간 다국어 지원 (Dynamic Localization)
+- 헤더의 **KR | JP 토글**을 통해 페이지 새로고침 없이 메인 화면과 매칭 화면의 모든 UI 텍스트가 실시간 한국어/일본어로 스위칭됩니다.
 
-```bash
-# 프로젝트 폴더에서 터미널 열기
-npm install
+### 2. 🛡️ 상호주의 기반 신원 검증 배지 (eKYC & Reciprocity Badge)
+- 미혼 인증(Single), 직장 인증(Job), 학력 인증(Education), 신원(Identity) 검증 서류 제출 프로세스 탑재.
+- **상호주의(Reciprocity) 원칙**에 의해, 나 또한 서류 인증을 받아 배지가 활성화되어야만 상대방의 배지 정보를 잠금 해제하여 열람할 수 있습니다.
+
+### 📊 3. 과학적 가치관 분석 매칭 & 물리 엔진 시각화
+- 결혼관, 재정관, 자녀 계획, 거주지 유연성에 대한 다차원 호합도 점수 산출 및 AI 코칭 리포트 발행.
+- **Matter.js** 기반의 인터랙티브 물리 엔진 캔버스를 통해 기존 소개팅 앱의 피로(성비 불균형, 외모 줄 세우기) 및 Best-Saiko의 대안 가치를 시각적으로 드래그하며 체험할 수 있습니다.
+
+### 💬 4. 실시간 WebSocket 채팅 & AI 세이프가드 (Gemini Guard)
+- 동일 포트에서 구동되는 초저지연 WebSocket 서버를 활용하여 1:1 실시간 대화 및 통화 릴레이 지원.
+- 대화 중 계좌 유도, 송금 요구 등의 금전 사기 패턴 감지 시 **AI 실시간 스캠 경고 배너**가 즉각 가동됩니다.
+
+### 💳 5. Toss Payments & PayPal 이중 결제 연동
+- 국내 유저를 위한 **토스페이먼츠(카드, 계좌이체)** 및 해외/일본 유저를 위한 **PayPal** 일회성 상품 및 Pro 멤버십 업그레이드 결제 모듈이 완벽히 가동됩니다.
+
+---
+
+## 🛠️ 기술 스택 (Tech Stack)
+
+### Frontend
+- **React 18 + TypeScript**
+- **Vite** (초고속 빌드 및 HMR)
+- **Tailwind CSS + Framer Motion** (프리미엄 애니메이션 및 반응형 레이아웃)
+- **React Router DOM** (멀티페이지 라우팅)
+- **Firebase Client SDK** (인증 및 주문 이력 저장)
+
+### Backend (Monolith)
+- **Node.js + Express**
+- **TypeScript (tsc)**
+- **ws (WebSocket)** (실시간 통화 및 대화 제어)
+- **Firebase Admin SDK** (서버 측 데이터 검증 및 연령 검증 가드)
+- **Google Gemini Generative AI SDK** (대화 세이프가드 분석)
+
+---
+
+## 📂 디렉토리 구조 (Directory Structure)
+
+```text
+marriage/
+├── backend/            # Express 백엔드 API & WebSocket 서버
+│   ├── src/
+│   │   ├── config/     # Firebase Admin SDK 설정
+│   │   ├── services/   # DB 관리, 매칭 점수, 서류 심사, Gemini 서비스 로직
+│   │   ├── types/      # 공통 TS 타입 정의
+│   │   ├── utils/      # 톤앤매너 번역 사전 등 유틸리티
+│   │   └── server.ts   # 백엔드 게이트웨이 메인 엔트리
+│   ├── tsconfig.json
+│   └── package.json
+├── src/                # Vite React 웹 프론트엔드
+│   ├── components/     # 네비게이션, 결제 모듈, 매칭 컨테이너 컴포넌트
+│   ├── contexts/       # Auth 및 글로벌 Language Context
+│   ├── config/         # 다국어 리소스 사전 (content.ts)
+│   ├── pages/          # 메인 랜딩 페이지 및 주요 뷰
+│   ├── App.tsx         # 클라이언트 라우터 및 글로벌 레이아웃
+│   └── main.tsx
+├── dist/               # 프론트엔드 빌드 결과물 (Express가 서빙)
+├── vite.config.ts      # 개발 시 백엔드로의 API/WS 프록시 설정
+├── package.json
+└── README.md
 ```
 
-### Step 2. 환경 변수 설정
+---
 
-```bash
-# .env.example 파일을 복사
-cp .env.example .env
-```
+## ⚙️ 실행 및 배포 가이드 (Getting Started)
 
-`.env` 파일을 열고 자신의 정보를 입력:
-
+### 1. 환경 변수 설정
+`backend/.env` 파일을 생성하고 다음 값을 구성합니다.
 ```env
-# Firebase (필수)
-VITE_FIREBASE_API_KEY=여기에_입력
-VITE_FIREBASE_PROJECT_ID=여기에_입력
-...
-
-# PayPal (해외결제 사용 시)
-VITE_PAYPAL_CLIENT_ID=여기에_입력
-
-# 토스페이먼츠 (국내결제 사용 시)
-VITE_TOSS_CLIENT_KEY=여기에_입력
+PORT=3000
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
-### Step 3. 개발 서버 실행
-
-```bash
-npm run dev
-```
-
-브라우저에서 `http://localhost:5173` 열기 — 끝! 🎉
-
----
-
-## 🎨 커스터마이징 가이드
-
-### ① 사이트 텍스트 변경
-
-📄 파일: `src/config/content.ts`
-
-이 파일 하나에 사이트의 **모든 텍스트**가 들어있습니다:
-
-```typescript
-export const SITE_CONFIG = {
-  brandName: '내 브랜드 이름',        // 브랜드명
-  copyright: '© 2026 내 회사명',      // 저작권
-  
-  hero: {
-    titleLeft: ['첫줄', '둘째줄'],     // 히어로 왼쪽 타이틀
-    titleRight: ['세째줄', '넷째줄'],   // 히어로 오른쪽 타이틀
-    watermark: 'BRANDNAME',            // 배경 워터마크
-    description: '설명문...',           // 소개글
-  },
-  
-  metrics: {
-    items: [
-      { value: '99.9%', label: '정확도' },  // 성능 지표
-      // ...
-    ],
-  },
-  // ... 나머지도 같은 방식
-};
-```
-
-### ② 배경 영상 변경
-
-📄 파일: `src/config/videos.ts`
-
-```typescript
-export const VIDEO_URLS = {
-  hero: '/my-video.mp4',        // public/ 폴더에 넣은 파일
-  section2: 'https://...',      // 또는 외부 URL
-  metrics: '',                   // 빈 문자열 = 검정 배경
-  technology: '/tech-bg.mp4',
-  footer: '/footer-bg.mp4',
-};
-```
-
-**영상 넣는 방법:**
-1. MP4 파일을 `public/` 폴더에 복사
-2. `videos.ts`에서 `/파일명.mp4`으로 경로 지정
-
-### ③ 로고 변경
-
-📄 파일: `src/components/ConnectAILabLogo.tsx`
-
-SVG 경로를 수정하거나, 이미지 로고로 교체
-
-### ④ 색상/폰트 변경
-
-📄 파일: `tailwind.config.js` + `src/index.css`
-
-기본 설정은 검정 배경 + 흰색 텍스트 + Space Mono 폰트
-
----
-
-## 🔥 Firebase 설정 방법
-
-### 1단계: 프로젝트 생성
-
-1. [Firebase Console](https://console.firebase.google.com/) 접속
-2. **프로젝트 추가** 클릭 → 이름 입력 → 생성
-3. **웹 앱 추가** (</> 아이콘) → 앱 이름 입력
-
-### 2단계: 설정값 복사
-
-프로젝트 설정에서 나오는 값을 `.env` 파일에 입력:
-
-```env
-VITE_FIREBASE_API_KEY=AIzaSyB...
-VITE_FIREBASE_AUTH_DOMAIN=my-project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=my-project
-VITE_FIREBASE_STORAGE_BUCKET=my-project.firebasestorage.app
-VITE_FIREBASE_MESSAGING_SENDER_ID=123456789
-VITE_FIREBASE_APP_ID=1:123456789:web:abc123
-```
-
-### 3단계: 인증 활성화
-
-Firebase Console → Authentication → Sign-in method에서 활성화:
-- ✅ Google
-- ✅ Apple (선택)
-- ✅ 이메일/비밀번호 (선택)
-
-### 코드에서 사용하기
-
-```tsx
-import { useAuth } from './contexts/AuthContext';
-
-function MyPage() {
-  const { user, signInWithGoogle, signOut } = useAuth();
-
-  if (!user) {
-    return <button onClick={signInWithGoogle}>Google 로그인</button>;
-  }
-
-  return (
-    <div>
-      <p>안녕하세요, {user.displayName}님!</p>
-      <button onClick={signOut}>로그아웃</button>
-    </div>
-  );
-}
-```
-
----
-
-## 💳 PayPal 결제 설정 (해외 결제)
-
-### 1단계: PayPal 앱 생성
-
-1. [PayPal Developer](https://developer.paypal.com/dashboard) 접속
-2. **Apps & Credentials** → **Create App**
-3. **Client ID** 복사 → `.env`에 입력
-
-```env
-VITE_PAYPAL_CLIENT_ID=AdUXefM8jcKwu20P...
-```
-
-### 2단계: 상품 정보 수정
-
-📄 파일: `src/lib/paypal.ts`
-
-```typescript
-export const PRODUCTS: PayPalProduct[] = [
-  {
-    id: 'my-product',
-    name: '내 상품',
-    description: '상품 설명',
-    price: '29.99',        // USD
-    currency: 'USD',
-  },
-];
-```
-
-### 3단계: 결제 버튼 넣기
-
-```tsx
-import PayPalCheckoutButton from './components/payment/PayPalCheckoutButton';
-import { PRODUCTS } from './lib/paypal';
-
-function PricingSection() {
-  return (
-    <PayPalCheckoutButton
-      product={PRODUCTS[0]}
-      onSuccess={(details) => {
-        alert(`결제 완료! Order ID: ${details.id}`);
-        // Firestore에 주문 기록 저장 등
-      }}
-      onError={(err) => alert('결제 실패')}
-    />
-  );
-}
-```
-
-### 테스트
-
-- Sandbox 모드에서는 **PayPal 테스트 계정**으로 결제 테스트 가능
-- Developer Dashboard → Sandbox → Accounts에서 테스트 계정 확인
-
----
-
-## 🇰🇷 토스페이먼츠 설정 (국내 결제)
-
-### 1단계: 상점 등록
-
-1. [토스페이먼츠 개발자](https://developers.tosspayments.com) 가입
-2. **내 개발정보** → **클라이언트 키** 복사
-
-```env
-VITE_TOSS_CLIENT_KEY=test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq
-```
-
-> 💡 `test_ck_`로 시작하면 테스트 모드, `live_ck_`로 시작하면 실서비스
-
-### 2단계: 상품 정보 수정
-
-📄 파일: `src/lib/toss.ts`
-
-```typescript
-export const TOSS_PRODUCTS: TossProduct[] = [
-  {
-    id: 'my-product-kr',
-    name: '내 상품 이름',     // 결제창에 표시
-    price: 29900,             // 원 단위
-    currency: 'KRW',
-  },
-];
-```
-
-### 3단계: 결제 버튼 넣기
-
-```tsx
-import TossCheckoutButton from './components/payment/TossCheckoutButton';
-import { TOSS_PRODUCTS } from './lib/toss';
-
-function PricingSection() {
-  return (
-    <TossCheckoutButton
-      product={TOSS_PRODUCTS[0]}
-      customerName="홍길동"
-      customerEmail="user@example.com"
-      onError={(err) => alert('결제 실패')}
-    />
-  );
-}
-```
-
-### 결제 완료 처리
-
-토스페이먼츠는 결제 성공 시 `successUrl`로 리다이렉트합니다.
-서버에서 **결제 승인 API**를 호출해야 최종 완료됩니다.
-
-> ⚠️ 실서비스에서는 반드시 백엔드 서버에서 결제 승인 처리를 해야 합니다.
-
----
-
-## 📁 전체 파일 구조
-
-```
-프로젝트/
-├── .env.example              ← 📋 환경변수 템플릿 (복사해서 .env로)
-├── index.html                ← HTML 진입점
-├── package.json              ← 의존성 목록
-├── tailwind.config.js        ← Tailwind 설정
-├── public/                   ← 📂 여기에 영상/이미지 넣기
-│
-└── src/
-    ├── config/               ← ⭐ 설정 파일 (여기만 수정!)
-    │   ├── videos.ts         ←   🎬 영상 URL
-    │   └── content.ts        ←   ✏️ 모든 텍스트
-    │
-    ├── lib/                  ← 외부 서비스 연동
-    │   ├── firebase.ts       ←   🔥 Firebase 초기화
-    │   ├── firestore.ts      ←   📊 DB 모델 + CRUD
-    │   ├── paypal.ts         ←   💳 PayPal 상품 정의
-    │   └── toss.ts           ←   🇰🇷 토스 상품 정의
-    │
-    ├── contexts/
-    │   └── AuthContext.tsx    ←   🔐 로그인 상태 관리
-    │
-    ├── components/
-    │   ├── payment/          ←   💰 결제 버튼 컴포넌트
-    │   │   ├── PayPalCheckoutButton.tsx
-    │   │   └── TossCheckoutButton.tsx
-    │   ├── Navbar.tsx
-    │   ├── ConnectAILabLogo.tsx
-    │   ├── ScrambleText.tsx
-    │   └── SquashHamburger.tsx
-    │
-    ├── App.tsx               ← 메인 페이지 (5개 섹션)
-    ├── main.tsx              ← 앱 진입점
-    └── index.css             ← 글로벌 스타일
-```
-
----
-
-## 🌐 배포 방법
-
-### Firebase Hosting (추천)
-
-```bash
-# Firebase 로그인
-npx -y firebase-tools@latest login
-
-# 호스팅 초기화
-npx -y firebase-tools@latest init hosting
-# → public 디렉토리: dist
-# → SPA: Yes
-
-# 빌드 후 배포
-npm run build
-npx -y firebase-tools@latest deploy --only hosting
-```
-
-### Vercel
-
-```bash
-npx -y vercel --prod
-```
-
-### Netlify
-
-`dist/` 폴더를 Netlify에 드래그 앤 드롭
-
----
-
-## ❓ FAQ
-
-**Q: Firebase 없이도 사이트가 보이나요?**  
-A: 네! 랜딩 페이지는 Firebase 없이도 정상 작동합니다. 로그인/결제 기능만 비활성됩니다.
-
-**Q: PayPal과 토스 둘 다 꼭 써야 하나요?**  
-A: 아닙니다. 필요한 것만 쓰세요. 안 쓰는 건 `.env`에 키를 안 넣으면 됩니다.
-
-**Q: 영상은 어디서 구하나요?**  
-A: [Pexels](https://pexels.com), [Pixabay](https://pixabay.com) 에서 무료 MP4를 다운받거나, 
-직접 촬영한 영상을 `public/` 폴더에 넣으세요.
-
-**Q: 모바일에서도 잘 보이나요?**  
-A: 네, 반응형으로 제작되어 모바일/태블릿/데스크톱 모두 대응합니다.
-
----
-
-## 🛠 기술 스택
-
-| 기술 | 용도 |
-|------|------|
-| React 18 + TypeScript | UI 프레임워크 |
-| Vite 5 | 빌드 도구 (초고속) |
-| Tailwind CSS 3 | 스타일링 |
-| Framer Motion 12 | 애니메이션 |
-| Firebase Auth | 회원 인증 |
-| Cloud Firestore | 데이터베이스 |
-| @paypal/react-paypal-js | 해외 결제 |
-| 토스페이먼츠 SDK | 국내 결제 |
-
----
-
-**© 2026 AI CITY BUILDERS. All rights reserved.**
+### 2. 패키지 설치
+* **루트(프론트엔드)** 패키지 설치:
+  ```bash
+  npm install
+  ```
+* **백엔드** 패키지 설치:
+  ```bash
+  cd backend
+  npm install
+  cd ..
+  ```
+
+### 3. 개발(Dev) 모드 구동
+프론트엔드와 백엔드를 각각 가동하여 독립적으로 개발을 진행할 수 있습니다. `vite.config.ts` 프록시 설정에 의해 프론트엔드의 `/api` 및 `/ws` 호출은 백엔드 포트(3000)로 자동 우회됩니다.
+
+* **백엔드 실행 (Port 3000)**:
+  ```bash
+  cd backend
+  npm run dev
+  ```
+* **프론트엔드 실행 (Port 5173)**:
+  ```bash
+  # 루트 디렉토리에서
+  npm run dev
+  ```
+
+### 4. 프로덕션 빌드 및 단일 포트 통합 실행 (Monolith)
+프로덕션 환경에서는 프론트엔드를 빌드한 후, Express 서버 1개만 실행하면 모든 웹 리소스와 API, WebSocket이 동일 포트(3000)에서 통합 가동됩니다.
+
+1. **프론트엔드 빌드**:
+   ```bash
+   npm run build
+   # 빌드 결과물이 루트의 /dist 폴더에 생성됩니다.
+   ```
+2. **백엔드 빌드**:
+   ```bash
+   cd backend
+   npm run build
+   ```
+3. **통합 서버 실행**:
+   ```bash
+   npm start
+   # 또는 node dist/server.js
+   ```
+   이후 브라우저에서 `http://localhost:3000`으로 접속하여 웹사이트 및 서비스를 이용합니다.

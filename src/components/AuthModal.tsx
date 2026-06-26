@@ -20,6 +20,9 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [birthdate, setBirthdate] = useState('');
+  const [country, setCountry] = useState<'KR' | 'JP'>('KR');
   const [loading, setLoading] = useState(false);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -29,7 +32,41 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
       if (mode === 'login') {
         await signInWithEmail(email, password);
       } else {
+        // 나이 유효성 검증
+        if (!nickname || !birthdate) {
+          alert('⚠️ 모든 필수 항목을 입력해주세요.');
+          setLoading(false);
+          return;
+        }
+
+        const birth = new Date(birthdate);
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+          age--;
+        }
+
+        if (country === 'KR' && age < 19) {
+          alert('⚠️ 대한민국 결혼중개업법에 의거, 만 19세 미만의 미성년자는 이용이 불가합니다.');
+          setLoading(false);
+          return;
+        }
+        if (country === 'JP' && age < 18) {
+          alert('⚠️ 이성소개사업법(일본)에 의거, 만 18세 미만의 미성년자는 이용이 불가합니다.');
+          setLoading(false);
+          return;
+        }
+
         await signUpWithEmail(email, password);
+        // 로컬스토리지에 프로필 초기 데이터 보관
+        localStorage.setItem(`profile_mock_user_123`, JSON.stringify({
+          email,
+          displayName: nickname,
+          birthdate,
+          country,
+          photoURL: '',
+        }));
       }
       onClose();
     } catch {
@@ -175,6 +212,66 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   className="w-full h-[44px] bg-white/[0.05] border border-white/10 rounded-lg px-4 text-white text-[14px] placeholder:text-white/20 outline-none focus:border-white/30 transition-colors"
                 />
               </div>
+
+              {mode === 'signup' && (
+                <>
+                  <div>
+                    <label className="text-white/40 text-[12px] uppercase tracking-[0.1em] mb-2 block">
+                      Nickname (닉네임)
+                    </label>
+                    <input
+                      type="text"
+                      value={nickname}
+                      onChange={(e) => setNickname(e.target.value)}
+                      placeholder="Enter your nickname"
+                      required
+                      className="w-full h-[44px] bg-white/[0.05] border border-white/10 rounded-lg px-4 text-white text-[14px] placeholder:text-white/20 outline-none focus:border-white/30 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-white/40 text-[12px] uppercase tracking-[0.1em] mb-2 block">
+                      Birthdate (생년월일)
+                    </label>
+                    <input
+                      type="date"
+                      value={birthdate}
+                      onChange={(e) => setBirthdate(e.target.value)}
+                      required
+                      className="w-full h-[44px] bg-white/[0.05] border border-white/10 rounded-lg px-4 text-white text-[14px] outline-none focus:border-white/30 transition-colors"
+                      style={{ colorScheme: 'dark' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-white/40 text-[12px] uppercase tracking-[0.1em] mb-2 block">
+                      Residence Country (거주 국가)
+                    </label>
+                    <div className="flex gap-4 mt-2">
+                      <label className="flex items-center gap-2 text-white text-[14px] cursor-pointer">
+                        <input
+                          type="radio"
+                          name="country"
+                          value="KR"
+                          checked={country === 'KR'}
+                          onChange={() => setCountry('KR')}
+                          className="w-4 h-4 accent-white"
+                        />
+                        Korea 🇰🇷
+                      </label>
+                      <label className="flex items-center gap-2 text-white text-[14px] cursor-pointer">
+                        <input
+                          type="radio"
+                          name="country"
+                          value="JP"
+                          checked={country === 'JP'}
+                          onChange={() => setCountry('JP')}
+                          className="w-4 h-4 accent-white"
+                        />
+                        Japan 🇯🇵
+                      </label>
+                    </div>
+                  </div>
+                </>
+              )}
 
               <button
                 type="submit"

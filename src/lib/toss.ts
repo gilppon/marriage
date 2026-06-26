@@ -34,20 +34,14 @@ export interface TossProduct {
 export const TOSS_PRODUCTS: TossProduct[] = [
   {
     id: 'connect-ai-basic-kr',
-    name: 'Connect AI Basic 라이센스',
-    price: 29900,
+    name: 'Best-Saiko Basic (하트 30개)',
+    price: 39900,
     currency: 'KRW',
   },
   {
     id: 'connect-ai-pro-kr',
-    name: 'Connect AI Pro 라이센스',
-    price: 99000,
-    currency: 'KRW',
-  },
-  {
-    id: 'connect-ai-enterprise-kr',
-    name: 'Connect AI Enterprise 라이센스',
-    price: 299000,
+    name: 'Best-Saiko Pro 30일 패스',
+    price: 129000,
     currency: 'KRW',
   },
 ];

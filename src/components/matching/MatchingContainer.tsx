@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Lock, Unlock, Phone, Heart, Users, RefreshCw, Send, AlertTriangle, Eye, Compass, X } from 'lucide-react';
 import Matter from 'matter-js';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 // 번역 데이터 (ko / ja)
 const TRANSLATIONS = {
@@ -22,7 +23,7 @@ const TRANSLATIONS = {
     chatPlaceholder: '대화를 입력하세요 (AI 실시간 스캠 감시 작동 중)',
     send: '전송',
     scamWarning: '🚨 AI 실시간 감시: 금전 정보 요구 및 양도 절대 금지!',
-    burnoutTitle: '소개팅 앱 번아웃 원인과 하나-일 대안 (드래그해 보세요)',
+    burnoutTitle: '소개팅 앱 번아웃 원인과 Best-Saiko 대안 (드래그해 보세요)',
     upgradeBtn: '프리미엄 회원 업그레이드 (인증 배지 필터 활성화)',
     premiumStatus: '👑 프리미엄 회원 활성화됨',
     startMatchingBtn: '매칭 풀 대기열 합류하기',
@@ -53,35 +54,79 @@ const TRANSLATIONS = {
   }
 };
 
-const MOCK_MATE = {
-  name: 'Haruka (하루카)',
-  age: 26,
-  location: 'Tokyo, Japan 🇯🇵',
-  matchRate: 94,
-  avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&q=80&w=200',
-  aiAdvice: '거주지(일본 이주)에 대해 약간의 조율이 필요하나, 자녀 계획과 종교관이 극도로 일치합니다. 상대방에게 따뜻하게 먼저 인사를 건네보세요.',
-  aiAdviceJa: '居住地（日本移住）について少し調整が必要ですが、将来設計と宗教観が非常に一致しています。相手に温かく話しかけてみてください。',
-  badges: [
-    { id: 'identity', label: '미혼 인증 (Single)', key: 'maritalStatusVerified', expired: '3개월' },
-    { id: 'job', label: '직장 인증 (Job)', key: 'employmentVerified', expired: '6개월' },
-    { id: 'education', label: '학력 인증 (Education)', key: 'educationVerified', expired: '무제한' },
-  ],
-  radar: {
-    x1: 85, // 가치관 일치
-    y1: 90, // 의사소통
-    x2: 75, // 미래 설계
-    y2: 88, // 문화 호환성
+const MOCK_MATES = [
+  {
+    id: 'haruka',
+    name: 'Haruka (하루카)',
+    age: 26,
+    location: 'Tokyo, Japan 🇯🇵',
+    matchRate: 94,
+    avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&q=80&w=200',
+    aiAdvice: '거주지(일본 이주)에 대해 약간의 조율이 필요하나, 자녀 계획과 종교관이 극도로 일치합니다. 상대방에게 따뜻하게 먼저 인사를 건네보세요.',
+    aiAdviceJa: '居住地（日本移住）について少し調整が必要ですが、将来設計と宗教観が非常に一致しています。相手に温かく話しかけてみてください。',
+    badges: [
+      { id: 'identity', label: '미혼 인증 (Single)', key: 'maritalStatusVerified', expired: '3개월' },
+      { id: 'job', label: '직장 인증 (Job)', key: 'employmentVerified', expired: '6개월' },
+      { id: 'education', label: '학력 인증 (Education)', key: 'educationVerified', expired: '무제한' },
+    ],
+    radar: {
+      x1: 85,
+      y1: 90,
+      x2: 75,
+      y2: 88,
+    }
+  },
+  {
+    id: 'yui',
+    name: 'Yui (유이)',
+    age: 25,
+    location: 'Osaka, Japan 🇯🇵',
+    matchRate: 89,
+    avatar: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&q=80&w=200',
+    aiAdvice: '의사소통 성향과 문화적 호환성이 뛰어나며, 맞벌이 계획에 대한 서로의 가치관이 일치하여 훌륭한 대화가 예상됩니다.',
+    aiAdviceJa: 'コミュニケーション傾向と文化的互換性に優れており、共働きの将来設計に対するお互いの価値観が一致しています。',
+    badges: [
+      { id: 'identity', label: '미혼 인증 (Single)', key: 'maritalStatusVerified', expired: '3개월' },
+      { id: 'education', label: '학력 인증 (Education)', key: 'educationVerified', expired: '무제한' },
+    ],
+    radar: {
+      x1: 90,
+      y1: 85,
+      x2: 80,
+      y2: 92,
+    }
+  },
+  {
+    id: 'minji',
+    name: 'Minji (민지)',
+    age: 27,
+    location: 'Seoul, Korea 🇰🇷',
+    matchRate: 85,
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200',
+    aiAdvice: '종교관과 미래 설계 선호도가 매우 조화롭습니다. 서울-도쿄 간 장거리 소통 방식에 대해 이야기를 나누어 보세요.',
+    aiAdviceJa: '宗教観と将来設計の好みが非常に調和しています。ソウル-東京間の遠距離コミュニケーションについて話し合ってみてください。',
+    badges: [
+      { id: 'identity', label: '미혼 인증 (Single)', key: 'maritalStatusVerified', expired: '3개월' },
+      { id: 'job', label: '직장 인증 (Job)', key: 'employmentVerified', expired: '6개월' },
+    ],
+    radar: {
+      x1: 80,
+      y1: 82,
+      x2: 88,
+      y2: 84,
+    }
   }
-};
+];
 
 interface MatchingContainerProps {
   user: any;
 }
 
 export default function MatchingContainer({ user: _user }: MatchingContainerProps) {
-  const [lang, setLang] = useState<'ko' | 'ja'>('ko');
+  const { lang } = useLanguage();
   const [isSearching, setIsSearching] = useState(false);
   const [matchFound, setMatchFound] = useState(false);
+  const [activeMateIndex, setActiveMateIndex] = useState(0);
   const [isPremium, setIsPremium] = useState(false);
   const [badgesUnlocked, setBadgesUnlocked] = useState<Record<string, boolean>>({});
   
@@ -104,8 +149,17 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
 
   // 매칭 검색 시뮬레이션
   const startSearch = () => {
+    if (!_user) {
+      alert(lang === 'ko' 
+        ? '⚠️ 로그인이 필요한 서비스입니다. 상단 우측의 [Sign In] 버튼을 통해 로그인 후 대기열에 합류할 수 있습니다.' 
+        : '⚠️ ログインが必要なサービスです。右上隅の[Sign In]ボタンからログイン後にマッチングプールに合流できます。'
+      );
+      return;
+    }
+
     setIsSearching(true);
     setMatchFound(false);
+
     setBadgesUnlocked({});
     setScamAlert(false);
     setMessages([]);
@@ -160,7 +214,8 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
   useEffect(() => {
     if (!sceneRef.current) return;
 
-    // 기존 엔진 청소
+    // 기존 DOM 및 엔진 청소
+    sceneRef.current.innerHTML = '';
     if (engineRef.current) {
       Matter.World.clear(engineRef.current.world, false);
       Matter.Engine.clear(engineRef.current);
@@ -208,7 +263,7 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
       { text: lang === 'ko' ? '가짜 프로필/스캠' : 'サクラ・ロマンス詐欺', fill: '#FF1744' },
     ];
 
-    // 하나-일 대안 블록 (사쿠라 코랄 핑크 & 에메랄드 톤)
+    // Best-Saiko 대안 블록 (사쿠라 코랄 핑크 & 에메랄드 톤)
     const alternativeItems = [
       { text: lang === 'ko' ? '미혼/재직 서류 인증' : '独身・仕事公認書類認証', fill: '#FF8A80' },
       { text: lang === 'ko' ? '가치관 세미 블라인드' : '価値観ブラインドマッチ', fill: '#00E5FF' },
@@ -299,12 +354,6 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
           <h1 className="text-xl font-bold tracking-tight uppercase">{t('matchingTitle')}</h1>
         </div>
         <div className="flex items-center gap-4">
-          <button
-            onClick={() => setLang(l => (l === 'ko' ? 'ja' : 'ko'))}
-            className="px-3 py-1.5 rounded bg-md3-surface border border-white/20 hover:bg-white/10 text-xs transition-colors"
-          >
-            {lang === 'ko' ? '日本語 🇯🇵' : '한국어 🇰🇷'}
-          </button>
           
           <button
             onClick={() => setIsPremium(p => !p)}
@@ -341,6 +390,36 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
             </button>
           </div>
 
+          {/* 추천 매칭된 회원 목록 */}
+          {matchFound && (
+            <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-none w-full max-w-full">
+              {MOCK_MATES.map((mate, idx) => (
+                <button
+                  key={mate.id}
+                  onClick={() => setActiveMateIndex(idx)}
+                  className={`flex items-center gap-3 p-3 rounded-xl border shrink-0 text-left cursor-pointer transition-all ${
+                    activeMateIndex === idx
+                      ? 'bg-md3-primary/10 border-md3-primary/50 ring-1 ring-md3-primary/30'
+                      : 'bg-md3-surface border-white/10 hover:bg-white/5'
+                  }`}
+                >
+                  <img
+                    src={mate.avatar}
+                    alt={mate.name}
+                    className="w-10 h-10 rounded-full object-cover border border-white/15"
+                  />
+                  <div>
+                    <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                      {mate.name.split(' ')[0]}
+                      <span className="text-[10px] text-white/50">{mate.age}세</span>
+                    </h4>
+                    <span className="text-[9px] text-md3-accent font-semibold">{mate.matchRate}% Match</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* 상대방 매칭 카드 */}
           {matchFound && (
             <motion.div 
@@ -350,22 +429,22 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
             >
               <div className="absolute top-0 right-0 bg-md3-accent text-black font-bold px-4 py-1.5 rounded-bl-xl text-sm flex items-center gap-1">
                 <Heart size={14} className="fill-current" />
-                {MOCK_MATE.matchRate}%
+                {MOCK_MATES[activeMateIndex].matchRate}%
               </div>
 
               {/* 기본 프로필 */}
               <div className="flex gap-4 items-center">
                 <img 
-                  src={MOCK_MATE.avatar} 
-                  alt={MOCK_MATE.name} 
+                  src={MOCK_MATES[activeMateIndex].avatar} 
+                  alt={MOCK_MATES[activeMateIndex].name} 
                   className="w-16 h-16 rounded-full object-cover border-2 border-md3-primary"
                 />
                 <div>
                   <h3 className="text-lg font-bold flex items-center gap-2">
-                    {MOCK_MATE.name}
-                    <span className="text-sm font-normal text-white/60">{MOCK_MATE.age}세</span>
+                    {MOCK_MATES[activeMateIndex].name}
+                    <span className="text-sm font-normal text-white/60">{MOCK_MATES[activeMateIndex].age}세</span>
                   </h3>
-                  <p className="text-xs text-white/40">{MOCK_MATE.location}</p>
+                  <p className="text-xs text-white/40">{MOCK_MATES[activeMateIndex].location}</p>
                 </div>
               </div>
 
@@ -373,7 +452,7 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
               <div className="p-4 rounded-xl bg-md3-background border border-white/5">
                 <h4 className="text-xs font-semibold text-md3-accent uppercase tracking-wider mb-1">{t('aiAdvice')}</h4>
                 <p className="text-xs text-white/70 leading-relaxed">
-                  {lang === 'ko' ? MOCK_MATE.aiAdvice : MOCK_MATE.aiAdviceJa}
+                  {lang === 'ko' ? MOCK_MATES[activeMateIndex].aiAdvice : MOCK_MATES[activeMateIndex].aiAdviceJa}
                 </p>
               </div>
 
@@ -395,10 +474,10 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
                   <svg className="absolute w-full h-full pointer-events-none" viewBox="0 0 200 200">
                     <polygon
                       points={`
-                        100,${100 - MOCK_MATE.radar.x1 * 0.8} 
-                        ${100 + MOCK_MATE.radar.y2 * 0.8},100 
-                        100,${100 + MOCK_MATE.radar.y1 * 0.8} 
-                        ${100 - MOCK_MATE.radar.x2 * 0.8},100
+                        100,${100 - MOCK_MATES[activeMateIndex].radar.x1 * 0.8} 
+                        ${100 + MOCK_MATES[activeMateIndex].radar.y2 * 0.8},100 
+                        100,${100 + MOCK_MATES[activeMateIndex].radar.y1 * 0.8} 
+                        ${100 - MOCK_MATES[activeMateIndex].radar.x2 * 0.8},100
                       `}
                       fill="rgba(255, 138, 128, 0.25)"
                       stroke="#FF8A80"
@@ -412,7 +491,7 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
               <div>
                 <h4 className="text-xs font-semibold text-white/60 mb-3">{t('badgeTitle')}</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {MOCK_MATE.badges.map(badge => {
+                  {MOCK_MATES[activeMateIndex].badges.map(badge => {
                     const isUnlocked = badgesUnlocked[badge.id];
                     return (
                       <div 

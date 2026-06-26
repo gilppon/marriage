@@ -111,6 +111,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithEmail = async (email: string, password: string) => {
+    // Firebase가 연결되지 않았거나 테스트 계정인 경우 로컬 데모(Mock) 로그인 처리
+    if (
+      email.endsWith('@test.com') ||
+      email.endsWith('@demo.com') ||
+      email === 'test' ||
+      !import.meta.env.VITE_FIREBASE_API_KEY ||
+      import.meta.env.VITE_FIREBASE_API_KEY === 'YOUR_API_KEY'
+    ) {
+      setUser({
+        uid: 'mock_user_123',
+        email: email.includes('@') ? email : `${email}@test.com`,
+        displayName: email.split('@')[0] || '데모메이트',
+        photoURL: '',
+        emailVerified: true,
+      } as any);
+      setProfile({
+        email: email.includes('@') ? email : `${email}@test.com`,
+        displayName: email.split('@')[0] || '데모메이트',
+        photoURL: '',
+      } as any);
+      setLoading(false);
+      return;
+    }
+
     try {
       setError(null);
       await signInWithEmailAndPassword(auth, email, password);
@@ -121,6 +145,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUpWithEmail = async (email: string, password: string) => {
+    if (
+      email.endsWith('@test.com') ||
+      email.endsWith('@demo.com') ||
+      email === 'test' ||
+      !import.meta.env.VITE_FIREBASE_API_KEY ||
+      import.meta.env.VITE_FIREBASE_API_KEY === 'YOUR_API_KEY'
+    ) {
+      setUser({
+        uid: 'mock_user_123',
+        email: email.includes('@') ? email : `${email}@test.com`,
+        displayName: email.split('@')[0] || '데모메이트',
+        photoURL: '',
+        emailVerified: true,
+      } as any);
+      setProfile({
+        email: email.includes('@') ? email : `${email}@test.com`,
+        displayName: email.split('@')[0] || '데모메이트',
+        photoURL: '',
+      } as any);
+      setLoading(false);
+      return;
+    }
+
     try {
       setError(null);
       await createUserWithEmailAndPassword(auth, email, password);
@@ -131,6 +178,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    if (user && user.uid === 'mock_user_123') {
+      setUser(null);
+      setProfile(null);
+      return;
+    }
+
     try {
       await firebaseSignOut(auth);
     } catch (err: any) {

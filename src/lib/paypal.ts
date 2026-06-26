@@ -43,15 +43,15 @@ export interface PayPalSubscriptionPlan {
 export const PRODUCTS: PayPalProduct[] = [
   {
     id: 'connect-ai-basic',
-    name: 'Connect AI Basic',
-    description: 'Neural interface basic access — single user license',
+    name: 'Best-Saiko Basic',
+    description: '30 Hearts for premium matchmaking & translation chat',
     price: '29.99',
     currency: 'USD',
   },
   {
     id: 'connect-ai-pro',
-    name: 'Connect AI Pro',
-    description: 'Full neural-AI interface access with real-time cognitive mapping',
+    name: 'Best-Saiko Pro',
+    description: '30 Days Pass for unlimited translation chat & 60m daily translation calls',
     price: '99.99',
     currency: 'USD',
   },

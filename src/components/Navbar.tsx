@@ -7,6 +7,8 @@ import { ScrambleText } from './ScrambleText';
 import { AuthModal } from './AuthModal';
 import { useAuth } from '../contexts/AuthContext';
 import { SITE_CONFIG } from '../config/content';
+import { useLanguage } from '../contexts/LanguageContext';
+import { Link } from 'react-router-dom';
 
 interface NavbarProps {
   entranceComplete: boolean;
@@ -21,6 +23,7 @@ export function Navbar({ entranceComplete, currentView: _currentView, setCurrent
   const [metricsHovered, setMetricsHovered] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const { lang, setLang } = useLanguage();
 
   const scrollTo = (y: number) => {
     window.scrollTo({ top: y, behavior: 'smooth' });
@@ -50,7 +53,7 @@ export function Navbar({ entranceComplete, currentView: _currentView, setCurrent
             >
               <ConnectAILabLogo size={18} className="text-white" />
               <span className="text-[16px] font-medium tracking-tight text-white">
-                {SITE_CONFIG.brandName}
+                {SITE_CONFIG[lang].brandName}
               </span>
             </motion.div>
 
@@ -128,6 +131,21 @@ export function Navbar({ entranceComplete, currentView: _currentView, setCurrent
                   <span className="text-[14px] text-white/80 max-w-[120px] truncate">
                     {user.displayName || user.email?.split('@')[0] || 'User'}
                   </span>
+                  
+                  {/* 추가: 프로필 및 인증 링크 */}
+                  <Link
+                    to="/profile"
+                    className="text-[12px] text-white/60 hover:text-white transition-colors ml-2 no-underline border-r border-white/15 pr-2"
+                  >
+                    {lang === 'ko' ? '프로필' : 'プロフィール'}
+                  </Link>
+                  <Link
+                    to="/verify"
+                    className="text-[12px] text-white/60 hover:text-white transition-colors no-underline border-r border-white/15 pr-2"
+                  >
+                    {lang === 'ko' ? '본인인증' : '本人確認'}
+                  </Link>
+
                   <button
                     onClick={signOut}
                     className="text-[12px] text-white/40 hover:text-white/80 transition-colors cursor-pointer bg-transparent border-none ml-1"
@@ -146,6 +164,15 @@ export function Navbar({ entranceComplete, currentView: _currentView, setCurrent
               </motion.button>
             )}
 
+            {/* Language toggle selector */}
+            <motion.button
+              className="h-12 px-4 bg-white/10 backdrop-blur-md rounded-[14px] flex items-center justify-center cursor-pointer border-none text-white/80 hover:bg-white/20 transition-all font-medium text-[14px]"
+              onClick={() => setLang(lang === 'ko' ? 'ja' : 'ko')}
+              whileTap={{ scale: 0.97 }}
+            >
+              {lang === 'ko' ? '日本語 🇯🇵' : '한국어 🇰🇷'}
+            </motion.button>
+
              {/* Download / Start Match button */}
             <motion.button
               className="h-12 px-6 bg-white rounded-full flex items-center gap-2.5 cursor-pointer border-none"
@@ -157,7 +184,7 @@ export function Navbar({ entranceComplete, currentView: _currentView, setCurrent
             >
               <Heart size={16} className="text-black fill-current" />
               <span className="text-black text-[16px] font-semibold">
-                <ScrambleText text={SITE_CONFIG.nav.downloadLabel} isHovered={downloadHovered} />
+                <ScrambleText text={SITE_CONFIG[lang].nav.downloadLabel} isHovered={downloadHovered} />
               </span>
             </motion.button>
           </div>
@@ -176,7 +203,7 @@ export function Navbar({ entranceComplete, currentView: _currentView, setCurrent
             >
               <ConnectAILabLogo size={14} className="text-white shrink-0" />
               <span className="text-[13px] font-medium tracking-tight text-white whitespace-nowrap">
-                {SITE_CONFIG.brandName}
+                {SITE_CONFIG[lang].brandName}
               </span>
             </motion.div>
 
@@ -254,6 +281,15 @@ export function Navbar({ entranceComplete, currentView: _currentView, setCurrent
               </motion.button>
             )}
 
+            {/* Language toggle selector */}
+            <motion.button
+              className="h-9 px-2 bg-white/15 backdrop-blur-md rounded-[10px] flex items-center justify-center cursor-pointer border-none text-white/80 hover:bg-white/25 text-[11px] font-medium"
+              onClick={() => setLang(lang === 'ko' ? 'ja' : 'ko')}
+              whileTap={{ scale: 0.95 }}
+            >
+              {lang === 'ko' ? 'JA' : 'KO'}
+            </motion.button>
+
             {/* Download / Start Match button */}
             <motion.button
               className="h-9 px-3.5 bg-white rounded-full flex items-center gap-1.5 cursor-pointer border-none shrink-0"
@@ -261,7 +297,7 @@ export function Navbar({ entranceComplete, currentView: _currentView, setCurrent
               onClick={() => setCurrentView?.('matching')}
             >
               <Heart size={12} className="text-black fill-current" />
-              <span className="text-black text-[13px] font-semibold">{SITE_CONFIG.nav.downloadLabel}</span>
+              <span className="text-black text-[13px] font-semibold">{SITE_CONFIG[lang].nav.downloadLabel}</span>
             </motion.button>
           </div>
         </div>
