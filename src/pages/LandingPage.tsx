@@ -534,9 +534,12 @@ export default function LandingPage() {
                 <span className="text-white/30 text-[14px]">/ 129,000원 (30일)</span>
               </div>
               <p className="text-white/40 text-[13px] leading-relaxed mb-8">
-                무제한 번역 채팅과 실시간 오디오/비디오 번역 통화로 언어 장벽을 완전히 허뭅니다.
+                무제한 번역 채팅과 실시간 오디오/비디오 번역 통화, 그리고 보너스 하트 제공으로 언어 장벽을 완전히 허뭅니다.
               </p>
               <ul className="flex flex-col gap-3 mb-10 flex-1">
+                <li className="flex items-center gap-3 text-[#FF8A80] text-[13px] font-bold">
+                  <span className="text-[#FF8A80]">✓</span> 가입 즉시 보너스 하트 100개 지급
+                </li>
                 <li className="flex items-center gap-3 text-white/60 text-[13px]">
                   <span className="text-white/30">✓</span> 1:1 실시간 텍스트 번역 채팅 30일 완전 무제한
                 </li>
@@ -544,7 +547,7 @@ export default function LandingPage() {
                   <span className="text-white/30">✓</span> 실시간 번역 영상/음성 통화 매일 60분 무료
                 </li>
                 <li className="flex items-center gap-3 text-white/60 text-[13px]">
-                  <span className="text-white/30">✓</span> 일일 무료 통화 초과 시 보유 하트로 사용
+                  <span className="text-white/30">✓</span> 일일 무료 통화 초과 시 보너스 하트로 사용
                 </li>
                 <li className="flex items-center gap-3 text-white/60 text-[13px]">
                   <span className="text-white/30">✓</span> 상호주의 신원 검증 배지 필터 잠금 해제

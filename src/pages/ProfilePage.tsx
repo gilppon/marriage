@@ -75,7 +75,7 @@ export default function ProfilePage() {
       
       const updated = {
         userId: user.uid,
-        hearts: isUpgrade ? wallet.hearts : wallet.hearts + 30,
+        hearts: isUpgrade ? wallet.hearts + 100 : wallet.hearts + 30,
         membershipType: isUpgrade ? 'PREMIUM' : wallet.membershipType
       };
       
@@ -451,9 +451,9 @@ export default function ProfilePage() {
               <div className="border border-[#FF8A80]/30 rounded-2xl p-4 flex flex-col gap-3 bg-[#FF8A80]/[0.02]">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="text-sm font-bold text-[#FF8A80]">Pro (프로 30일 패스)</h4>
+                    <h4 className="text-sm font-bold text-[#FF8A80]">Pro (프로 30일 패스 + 100하트)</h4>
                     <p className="text-[11px] text-white/40 mt-1">
-                      {lang === 'ko' ? '텍스트 번역 무제한 + 번역 영상/음성 통화 매일 60분 무료' : 'チャット無制限＋翻訳通話毎日60分無料'}
+                      {lang === 'ko' ? '텍스트 번역 무제한 + 통화 매일 60분 무료 + 보너스 하트 100개 지급' : 'チャット無制限＋翻訳通話毎日60分無料＋ボーナス100ハート'}
                     </p>
                   </div>
                   <div className="text-right">
