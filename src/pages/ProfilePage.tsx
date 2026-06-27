@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { Heart, Save, ShieldCheck, Coins, RefreshCw, X, AlertTriangle } from 'lucide-react';
+import { Heart, Save, ShieldCheck, Coins, X, AlertTriangle } from 'lucide-react';
 import PayPalCheckoutButton from '../components/payment/PayPalCheckoutButton';
 import TossCheckoutButton from '../components/payment/TossCheckoutButton';
 import { PRODUCTS } from '../lib/paypal';
@@ -67,6 +67,7 @@ export default function ProfilePage() {
         amount: parseFloat(amount),
         currency: 'USD',
         status: 'completed',
+        paypalOrderId: `pp_profile_${Date.now()}`,
       });
 
       // 2. 가상 지갑 업데이트 및 충전
