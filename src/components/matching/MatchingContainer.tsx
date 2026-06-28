@@ -928,22 +928,41 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
               </div>
 
               {/* 우측 패널: 내 카메라 화면 (35% 비율 - 오프셋 프레임 디자인) */}
-              <div className="lg:flex-[1] relative rounded-3xl overflow-hidden border border-white/10 bg-[#141122] flex items-center justify-center p-6 shadow-2xl">
-                {/* 가상 카메라 뷰 피드 및 배경 흐림 안내 */}
-                <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-2xl flex flex-col items-center justify-center gap-4 text-center p-6">
-                  <div className="w-20 h-20 rounded-full bg-md3-primary/10 border border-md3-primary/20 flex items-center justify-center text-md3-primary mb-2 shadow-inner">
-                    <UserCheck size={36} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-white">My Video Stream (나)</p>
-                    <p className="text-xs text-[#FF8A80] font-semibold mt-1.5 flex items-center gap-1.5 justify-center">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      {t('privacySafe')}
-                    </p>
-                    <p className="text-[10px] text-white/40 mt-3 max-w-[200px] mx-auto leading-relaxed">
-                      {t('bgBlurAlert')}
-                    </p>
-                  </div>
+              <div className="lg:flex-[1] relative rounded-3xl overflow-hidden border border-white/10 bg-[#141122] flex flex-col justify-end shadow-2xl">
+                {/* 나의 가상 카메라 비디오 스트림 (Unsplash 남성/여성 중립 프로필 활용) */}
+                <img 
+                  src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=300"
+                  alt="My Camera Stream"
+                  className="absolute inset-0 w-full h-full object-cover filter blur-md opacity-70 transition-all duration-700 hover:blur-none"
+                />
+
+                {/* 흐림 효과 오버레이 및 경계 */}
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-[4px]" />
+
+                {/* 우측 상단 실시간 LIVE 및 보안 배지 */}
+                <div className="absolute top-6 right-6 z-10 flex gap-1.5 items-center">
+                  <span className="flex h-2 w-2 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span className="text-[9px] bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+                    LIVE
+                  </span>
+                </div>
+
+                {/* 내 비디오 채널 라벨 및 상태 */}
+                <div className="relative z-10 p-6 text-left bg-gradient-to-t from-black/90 via-black/35 to-transparent w-full">
+                  <p className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <UserCheck size={14} className="text-md3-primary" />
+                    <span>My Stream (나)</span>
+                  </p>
+                  <p className="text-[10px] text-emerald-400 font-semibold mt-1 flex items-center gap-1">
+                    <span>●</span>
+                    <span>{t('privacySafe')}</span>
+                  </p>
+                  <p className="text-[9px] text-white/40 mt-1 leading-relaxed">
+                    {t('bgBlurAlert')}
+                  </p>
                 </div>
               </div>
 
