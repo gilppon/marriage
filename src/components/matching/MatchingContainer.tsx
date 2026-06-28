@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import Matter from 'matter-js';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { GeminiLiveSession } from '../../lib/geminiLive';
+import { AgoraLiveManager } from '../../lib/agoraLive';
 
 // 번역 데이터 (ko / ja)
 const TRANSLATIONS = {
@@ -155,33 +157,105 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
   const [isBooked, setIsBooked] = useState(false);
   const [showMeetingScreen, setShowMeetingScreen] = useState(false);
   const [meetingTimeElapsed, setMeetingTimeElapsed] = useState(0);
+  const [liveSubtitles, setLiveSubtitles] = useState('');
 
   // 채팅 상태
   const [messages, setMessages] = useState<Array<{ sender: 'user' | 'mate' | 'system', text: string }>>([]);
   const [inputVal, setInputVal] = useState('');
   const [scamAlert, setScamAlert] = useState(false);
 
-  // Matter.js 관련 ref
+  // Matter.js 및 미디어 통신 관련 ref
   const sceneRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Matter.Engine | null>(null);
   const timerRef = useRef<any>(null);
+  const agoraManagerRef = useRef<AgoraLiveManager | null>(null);
+  const geminiSessionRef = useRef<GeminiLiveSession | null>(null);
 
   const t = (key: keyof typeof TRANSLATIONS.ko) => {
     return TRANSLATIONS[lang][key] || TRANSLATIONS.ko[key];
   };
 
-  // 통화 미팅 타이머 효과
+  // 통화 미팅 타이머 효과 & 실시간 미디어 스트림 파이프라인 개설
   useEffect(() => {
     if (showMeetingScreen) {
       setMeetingTimeElapsed(0);
+      setLiveSubtitles(lang === 'ko' ? '초저지연 Gemini 3.5 Live 실시간 통역 세션을 개설 중입니다...' : '超低遅延 Gemini 3.5 Live リアルタイム通訳セッションを開設中...');
+
+      // 1. 타이머 가동
       timerRef.current = setInterval(() => {
         setMeetingTimeElapsed(prev => prev + 1);
       }, 1000);
+
+      // 2. Agora RTC 및 Gemini Live WebSocket 연동 개설
+      const targetLang = lang === 'ko' ? 'ja' : 'ko'; // 내 언어 기준 상대방 번역 타겟 언어 자동 설정
+      
+      const agora = new AgoraLiveManager({
+        appId: 'agora_demo_app_id_123',
+        channel: 'meeting_channel_best_saiko_777'
+      });
+      const gemini = new GeminiLiveSession({
+        apiKey: 'AIzaSyDemoKey_Gemini35LiveApi_2026',
+        sourceLang: lang,
+        targetLang: targetLang
+      });
+
+      agoraManagerRef.current = agora;
+      geminiSessionRef.current = gemini;
+
+      const initStreaming = async () => {
+        try {
+          // A. 제미나이 웹소켓 서버 접속
+          await gemini.connect();
+          
+          // B. 번역 수신 수신기 연결
+          gemini.onTranslationReceived((translatedText) => {
+            setLiveSubtitles(translatedText);
+          });
+
+          // C. 아고라 채널 합류 및 내 음성(PCM) 획득
+          await agora.joinMeeting(
+            (remoteUser) => {
+              console.log('[App] Remote Mate User successfully joined Agora session:', remoteUser);
+            },
+            (remoteUid) => {
+              console.log('[App] Remote Mate User left Agora session:', remoteUid);
+            }
+          );
+
+          // D. 아고라 PCM 청크 ➡️ 제미나이 실시간 번역 웹소켓 다이렉트 스트림 전송 결합
+          agora.registerAudioProcessor((pcmChunk) => {
+            gemini.sendAudioChunk(pcmChunk);
+          });
+
+        } catch (err) {
+          console.error('[App] Failed to establish real-time translation pipelines:', err);
+        }
+      };
+
+      initStreaming();
+
     } else {
       if (timerRef.current) clearInterval(timerRef.current);
+      
+      // 통화 해제 및 소켓 리소스 반환
+      if (agoraManagerRef.current) {
+        agoraManagerRef.current.leaveMeeting();
+        agoraManagerRef.current = null;
+      }
+      if (geminiSessionRef.current) {
+        geminiSessionRef.current.disconnect();
+        geminiSessionRef.current = null;
+      }
     }
+
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (agoraManagerRef.current) {
+        agoraManagerRef.current.leaveMeeting();
+      }
+      if (geminiSessionRef.current) {
+        geminiSessionRef.current.disconnect();
+      }
     };
   }, [showMeetingScreen]);
 
@@ -921,7 +995,7 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
                       <span className="w-1.5 h-1.5 rounded-full bg-[#FF8A80] animate-pulse" />
                     </div>
                     <p className="text-sm font-semibold text-emerald-400 leading-relaxed">
-                      🤖 {lang === 'ko' ? '반갑습니다! 화면이 참 잘 나오시네요. 오늘 대화 무척 기대하고 있었습니다!' : 'はじめまして！カメラの映りがとても綺麗ですね。今日の会話をとても楽しみにしていました！'}
+                      🤖 {liveSubtitles}
                     </p>
                   </div>
                 </div>
