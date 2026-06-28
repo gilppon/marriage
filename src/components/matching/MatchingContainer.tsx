@@ -627,163 +627,71 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
               </div>
             </div>
 
-            {/* ── 📹 안심 영상 미팅 화면 (Assured Video Meeting Screen) ── */}
-            {showMeetingScreen ? (
-              <div className="absolute inset-0 bg-[#0A0810] z-20 flex flex-col p-6 animate-fadeIn">
-                {/* 1. Scheduled Time Bar */}
-                <div className="w-full bg-[#181524] border border-white/10 rounded-xl px-4 py-2.5 flex justify-between items-center mb-6">
-                  <div className="flex items-center gap-2 text-[11px] font-medium text-white/60">
-                    <Clock size={12} className="text-[#FF8A80]" />
-                    <span>Meeting Slot: 30 Min</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 bg-red-500/10 px-2.5 py-1 rounded text-red-400 text-[11px] font-semibold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
-                    <span>
-                      {Math.floor(meetingTimeElapsed / 60)}:
-                      {String(meetingTimeElapsed % 60).padStart(2, '0')}
-                    </span>
-                  </div>
+            {/* 채팅 내용 영역 */}
+            <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-4 max-h-[390px]">
+              {messages.length === 0 ? (
+                <div className="text-center text-xs text-white/30 my-auto">
+                  {lang === 'ko' ? '매칭 대기열에 합류하여 대화를 나누어보세요.' : 'マッチング待機列に参加して会話を始めてみましょう。'}
                 </div>
-
-                {/* 2. Structured Layout (Formal Video Panels) */}
-                <div className="flex-1 grid grid-cols-1 gap-4 mb-6">
-                  {/* 상대 메이트 화면 */}
-                  <div className="relative rounded-2xl overflow-hidden border border-white/15 bg-slate-900 h-[140px] flex items-center justify-center">
-                    <img 
-                      src={MOCK_MATES[activeMateIndex].avatar} 
-                      alt="" 
-                      className="absolute inset-0 w-full h-full object-cover opacity-60 blur-md scale-105"
-                    />
-                    <div className="relative z-10 text-center px-4">
-                      <div className="w-12 h-12 rounded-full border border-white/30 overflow-hidden mx-auto mb-2">
-                        <img src={MOCK_MATES[activeMateIndex].avatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                messages.map((msg, index) => (
+                  <div 
+                    key={index}
+                    className={`flex flex-col ${
+                      msg.sender === 'user' 
+                        ? 'items-end' 
+                        : msg.sender === 'system' 
+                        ? 'items-center' 
+                        : 'items-start'
+                    }`}
+                  >
+                    {msg.sender === 'system' ? (
+                      <div className="px-3 py-1 rounded bg-white/5 border border-white/10 text-[9px] text-white/50 text-center">
+                        {msg.text}
                       </div>
-                      <p className="text-xs font-semibold text-white">{MOCK_MATES[activeMateIndex].name}</p>
-                      <p className="text-[10px] text-white/50">{t('verified')}</p>
-                    </div>
-                    {/* 실시간 자막 통역 UI */}
-                    <div className="absolute bottom-3 left-3 right-3 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg p-2 text-[10px] text-center text-emerald-400 font-medium">
-                      🤖 [Live Translate] {lang === 'ko' ? '반갑습니다! 화면이 참 잘 나오시네요.' : 'はじめまして！カメラの映りがとても綺麗ですね。'}
-                    </div>
-                  </div>
-
-                  {/* 내 화면 (약간 오프셋 프레임 디자인) */}
-                  <div className="relative rounded-2xl overflow-hidden border border-white/15 bg-slate-900 h-[100px] w-[140px] ml-auto -mt-10 mr-4 shadow-2xl z-10 flex items-center justify-center">
-                    <div className="text-center">
-                      <UserCheck size={18} className="text-md3-primary mx-auto mb-1" />
-                      <p className="text-[9px] font-bold text-white/80">ME (내 화면)</p>
-                      <p className="text-[8px] text-[#FF8A80] font-semibold">{t('privacySafe')}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 3. Trust & Privacy Indicators */}
-                <div className="bg-[#181524] border border-white/5 rounded-2xl p-4 flex flex-col gap-2.5 mb-6">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400">
-                    <Shield size={14} />
-                    <span>{t('videoMeetingStatus')}</span>
-                  </div>
-                  <div className="flex flex-col gap-1.5 pl-5 text-[10px] text-white/50">
-                    <p className="flex items-center gap-1.5">
-                      <span className="w-1 h-1 rounded-full bg-emerald-400" />
-                      {t('encryptedAlert')}
-                    </p>
-                    <p className="flex items-center gap-1.5">
-                      <span className="w-1 h-1 rounded-full bg-emerald-400" />
-                      {t('bgBlurAlert')}
-                    </p>
-                  </div>
-                </div>
-
-                {/* 4. Respectful Actions */}
-                <div className="grid grid-cols-2 gap-3 mt-auto">
-                  <button
-                    onClick={() => {
-                      alert(lang === 'ko' ? '☕ 잠시 자리를 비우기 위해 휴식 시간을 요청합니다.' : '☕ 一時的に席を外すため、休憩を要請します。');
-                    }}
-                    className="h-11 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-all"
-                  >
-                    <Volume2 size={12} />
-                    {t('requestIntermission')}
-                  </button>
-                  <button
-                    onClick={() => setShowMeetingScreen(false)}
-                    className="h-11 rounded-xl bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-400 text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-all"
-                  >
-                    <VideoOff size={12} />
-                    {t('endRespectfully')}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <>
-                {/* 채팅 내용 영역 */}
-                <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-4 max-h-[390px]">
-                  {messages.length === 0 ? (
-                    <div className="text-center text-xs text-white/30 my-auto">
-                      {lang === 'ko' ? '매칭 대기열에 합류하여 대화를 나누어보세요.' : 'マッチング待機列に参加して会話を始めてみましょう。'}
-                    </div>
-                  ) : (
-                    messages.map((msg, index) => (
+                    ) : (
                       <div 
-                        key={index}
-                        className={`flex flex-col ${
-                          msg.sender === 'user' 
-                            ? 'items-end' 
-                            : msg.sender === 'system' 
-                            ? 'items-center' 
-                            : 'items-start'
+                        className={`max-w-[80%] p-3 rounded-2xl text-xs leading-relaxed ${
+                          msg.sender === 'user'
+                            ? 'bg-md3-primary text-black font-medium rounded-tr-none'
+                            : 'bg-md3-background text-white rounded-tl-none border border-white/10'
                         }`}
                       >
-                        {msg.sender === 'system' ? (
-                          <div className="px-3 py-1 rounded bg-white/5 border border-white/10 text-[9px] text-white/50 text-center">
-                            {msg.text}
-                          </div>
-                        ) : (
-                          <div 
-                            className={`max-w-[80%] p-3 rounded-2xl text-xs leading-relaxed ${
-                              msg.sender === 'user'
-                                ? 'bg-md3-primary text-black font-medium rounded-tr-none'
-                                : 'bg-md3-background text-white rounded-tl-none border border-white/10'
-                            }`}
-                          >
-                            {msg.text}
-                          </div>
-                        )}
+                        {msg.text}
                       </div>
-                    ))
-                  )}
-                </div>
-
-                {/* AI 스캠 경고 배너 */}
-                {scamAlert && (
-                  <div className="bg-red-500/10 border-y border-red-500/20 px-4 py-2 flex items-center gap-2">
-                    <AlertTriangle className="text-red-500 shrink-0" size={16} />
-                    <span className="text-[10px] text-red-400 font-medium">{t('scamWarning')}</span>
+                    )}
                   </div>
-                )}
+                ))
+              )}
+            </div>
 
-                {/* 채팅 입력 */}
-                <div className="p-4 bg-md3-background border-t border-white/10 flex gap-2">
-                  <input
-                    type="text"
-                    value={inputVal}
-                    onChange={e => setInputVal(e.target.value)}
-                    placeholder={t('chatPlaceholder')}
-                    disabled={!matchFound}
-                    onKeyDown={e => e.key === 'Enter' && sendMessage()}
-                    className="flex-1 bg-md3-surface border border-white/10 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-md3-primary disabled:opacity-50 text-white"
-                  />
-                  <button
-                    onClick={sendMessage}
-                    disabled={!matchFound}
-                    className="p-2.5 rounded-lg bg-md3-primary text-black disabled:opacity-50 hover:bg-md3-primary/80 transition-colors"
-                  >
-                    <Send size={14} />
-                  </button>
-                </div>
-              </>
+            {/* AI 스캠 경고 배너 */}
+            {scamAlert && (
+              <div className="bg-red-500/10 border-y border-red-500/20 px-4 py-2 flex items-center gap-2">
+                <AlertTriangle className="text-red-500 shrink-0" size={16} />
+                <span className="text-[10px] text-red-400 font-medium">{t('scamWarning')}</span>
+              </div>
             )}
+
+            {/* 채팅 입력 */}
+            <div className="p-4 bg-md3-background border-t border-white/10 flex gap-2">
+              <input
+                type="text"
+                value={inputVal}
+                onChange={e => setInputVal(e.target.value)}
+                placeholder={t('chatPlaceholder')}
+                disabled={!matchFound}
+                onKeyDown={e => e.key === 'Enter' && sendMessage()}
+                className="flex-1 bg-md3-surface border border-white/10 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-md3-primary disabled:opacity-50 text-white"
+              />
+              <button
+                onClick={sendMessage}
+                disabled={!matchFound}
+                className="p-2.5 rounded-lg bg-md3-primary text-black disabled:opacity-50 hover:bg-md3-primary/80 transition-colors"
+              >
+                <Send size={14} />
+              </button>
+            </div>
 
           </div>
         </div>
@@ -941,6 +849,148 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* 📹 안심 영상 미팅 전체화면 시네마틱 오버레이 (Assured Video Meeting Fullscreen Modal) */}
+      <AnimatePresence>
+        {showMeetingScreen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-[#07050A] flex flex-col font-sans overflow-hidden"
+          >
+            {/* 1. 상단 타임 바 및 보안 헤더 */}
+            <div className="w-full bg-[#110E18]/80 backdrop-blur-md border-b border-white/10 px-6 py-4 flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+                  <Shield size={14} />
+                  <span>{t('videoMeetingStatus')}</span>
+                </div>
+                <span className="hidden sm:inline text-xs text-white/40">|</span>
+                <span className="hidden sm:inline text-xs text-white/60 font-medium">{t('encryptedAlert')}</span>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 bg-[#1A1626] border border-white/5 px-3 py-1.5 rounded-lg text-white/70 text-xs font-semibold">
+                  <Clock size={12} className="text-[#FF8A80]" />
+                  <span>Slot: 30 Mins</span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-lg text-red-400 text-xs font-bold">
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                  <span>
+                    {Math.floor(meetingTimeElapsed / 60)}:
+                    {String(meetingTimeElapsed % 60).padStart(2, '0')}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. 메인 스크린 영역: 데스크톱 기준 65% : 35% 가로분할 레이아웃 */}
+            <div className="flex-1 w-full flex flex-col lg:flex-row p-6 gap-6 overflow-hidden max-w-7xl mx-auto items-stretch">
+              
+              {/* 좌측 패널: 상대방 카메라 화면 (65% 비율) */}
+              <div className="flex-1 lg:flex-[1.8] relative rounded-3xl overflow-hidden border border-white/10 bg-[#120F1D] flex flex-col justify-end shadow-2xl">
+                {/* 실물 영상 묘사 배경 이미지 */}
+                <img 
+                  src={MOCK_MATES[activeMateIndex].avatar} 
+                  alt="" 
+                  className="absolute inset-0 w-full h-full object-cover opacity-80 filter brightness-90 transition-transform duration-1000 scale-105"
+                />
+                
+                {/* 비디오 프레임 오버레이 그라데이션 */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+
+                {/* 상대방 이름 및 프로필 배지 */}
+                <div className="absolute top-6 left-6 z-10 bg-black/40 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/10 flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-full border border-white/20 overflow-hidden">
+                    <img src={MOCK_MATES[activeMateIndex].avatar} alt="" className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white leading-none">{MOCK_MATES[activeMateIndex].name}</p>
+                    <p className="text-[9px] text-[#FF8A80] font-semibold mt-1">{t('verified')}</p>
+                  </div>
+                </div>
+
+                {/* 실시간 와이드 자막 번역 인터페이스 */}
+                <div className="relative z-10 w-full p-6">
+                  <div className="w-full bg-black/60 backdrop-blur-lg border border-white/15 rounded-2xl p-4 shadow-xl">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-[10px] uppercase font-bold tracking-widest text-[#FF8A80]">AI Live Translation</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#FF8A80] animate-pulse" />
+                    </div>
+                    <p className="text-sm font-semibold text-emerald-400 leading-relaxed">
+                      🤖 {lang === 'ko' ? '반갑습니다! 화면이 참 잘 나오시네요. 오늘 대화 무척 기대하고 있었습니다!' : 'はじめまして！カメラの映りがとても綺麗ですね。今日の会話をとても楽しみにしていました！'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 우측 패널: 내 카메라 화면 (35% 비율 - 오프셋 프레임 디자인) */}
+              <div className="lg:flex-[1] relative rounded-3xl overflow-hidden border border-white/10 bg-[#141122] flex items-center justify-center p-6 shadow-2xl">
+                {/* 가상 카메라 뷰 피드 및 배경 흐림 안내 */}
+                <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-2xl flex flex-col items-center justify-center gap-4 text-center p-6">
+                  <div className="w-20 h-20 rounded-full bg-md3-primary/10 border border-md3-primary/20 flex items-center justify-center text-md3-primary mb-2 shadow-inner">
+                    <UserCheck size={36} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white">My Video Stream (나)</p>
+                    <p className="text-xs text-[#FF8A80] font-semibold mt-1.5 flex items-center gap-1.5 justify-center">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      {t('privacySafe')}
+                    </p>
+                    <p className="text-[10px] text-white/40 mt-3 max-w-[200px] mx-auto leading-relaxed">
+                      {t('bgBlurAlert')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* 3. 하단 컨트롤 플로팅 컨트롤러 바 */}
+            <div className="w-full bg-[#110E18]/90 backdrop-blur-lg border-t border-white/10 px-8 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+              
+              {/* 왼쪽: 오디오/비디오 간편 토글 단축키 */}
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => alert(lang === 'ko' ? '마이크가 음소거되었습니다.' : 'マイクがミュートされました。')}
+                  className="p-3.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-white/80 hover:text-white transition-all shadow-lg"
+                >
+                  <MicOff size={16} />
+                </button>
+                <button 
+                  onClick={() => alert(lang === 'ko' ? '비디오 송출을 일시 중단합니다.' : 'ビデオ送出を一時中断します。')}
+                  className="p-3.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-white/80 hover:text-white transition-all shadow-lg"
+                >
+                  <VideoOff size={16} />
+                </button>
+              </div>
+
+              {/* 오른쪽: 격식있고 존중하는 액션 제어 버튼 */}
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => {
+                    alert(lang === 'ko' ? '☕ 상대방에게 공손하게 잠시 휴식 시간(Intermission)을 요청합니다.' : '☕ 相手に丁寧に一時的な休憩(Intermission)を要請します。');
+                  }}
+                  className="px-6 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-lg"
+                >
+                  <Volume2 size={14} className="text-emerald-400" />
+                  {t('requestIntermission')}
+                </button>
+                
+                <button
+                  onClick={() => setShowMeetingScreen(false)}
+                  className="px-6 py-3 rounded-2xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-bold flex items-center gap-2 transition-all shadow-lg"
+                >
+                  <VideoOff size={14} />
+                  {t('endRespectfully')}
+                </button>
+              </div>
+
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
