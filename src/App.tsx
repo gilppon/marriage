@@ -6,6 +6,7 @@ import LandingPage from './pages/LandingPage';
 import MatchingContainer from './components/matching/MatchingContainer';
 import ProfilePage from './pages/ProfilePage';
 import VerificationPage from './pages/VerificationPage';
+import ExplorePage from './pages/ExplorePage';
 
 import { LanguageProvider } from './contexts/LanguageContext';
 
@@ -20,18 +21,24 @@ function AppContent() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleViewChange = (view: 'landing' | 'matching') => {
+  const handleViewChange = (view: 'landing' | 'matching' | 'explore') => {
     if (view === 'matching') {
       navigate('/matching');
+    } else if (view === 'explore') {
+      navigate('/explore');
     } else {
       navigate('/');
     }
   };
 
-  const currentView = location.pathname.startsWith('/matching') ? 'matching' : 'landing';
+  const currentView = location.pathname.startsWith('/matching') 
+    ? 'matching' 
+    : location.pathname.startsWith('/explore')
+    ? 'explore'
+    : 'landing';
 
   return (
-    <div style={{ fontFamily: '"Space Mono", monospace' }}>
+    <div>
       <Navbar 
         entranceComplete={entranceComplete} 
         currentView={currentView}
@@ -40,6 +47,7 @@ function AppContent() {
 
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/explore" element={<ExplorePage />} />
         <Route path="/matching" element={<div className="pt-20"><MatchingContainer user={user} /></div>} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/verify" element={<VerificationPage />} />

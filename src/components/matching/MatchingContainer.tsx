@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Shield, Lock, Unlock, Users, RefreshCw, Send, 
+  Shield, Lock, Unlock, RefreshCw, Send, 
   AlertTriangle, X, Calendar, Video, UserCheck, 
   Volume2, VideoOff, MicOff, Clock, Sparkles
 } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { GeminiLiveSession } from '../../lib/geminiLive';
 import { AgoraLiveManager } from '../../lib/agoraLive';
@@ -95,11 +96,12 @@ const MOCK_MATES = [
       { id: 'job', label: '직장 인증 (Job)', key: 'employmentVerified', expired: '6개월' },
       { id: 'education', label: '학력 인증 (Education)', key: 'educationVerified', expired: '무제한' },
     ],
-    radar: {
-      x1: 85,
-      y1: 90,
-      x2: 75,
-      y2: 88,
+    compatibility: {
+      residenceScore: 22, // 만점 25
+      childPlanScore: 19, // 만점 20
+      economicScore: 14, // 만점 15
+      religionScore: 15, // 만점 15
+      languageScore: 24, // 만점 25
     }
   },
   {
@@ -115,11 +117,12 @@ const MOCK_MATES = [
       { id: 'identity', label: '미혼 인증 (Single)', key: 'maritalStatusVerified', expired: '3개월' },
       { id: 'education', label: '학력 인증 (Education)', key: 'educationVerified', expired: '무제한' },
     ],
-    radar: {
-      x1: 90,
-      y1: 85,
-      x2: 80,
-      y2: 92,
+    compatibility: {
+      residenceScore: 23,
+      childPlanScore: 17,
+      economicScore: 15,
+      religionScore: 13,
+      languageScore: 21,
     }
   },
   {
@@ -135,11 +138,12 @@ const MOCK_MATES = [
       { id: 'identity', label: '미혼 인증 (Single)', key: 'maritalStatusVerified', expired: '3개월' },
       { id: 'job', label: '직장 인증 (Job)', key: 'employmentVerified', expired: '6개월' },
     ],
-    radar: {
-      x1: 80,
-      y1: 82,
-      x2: 88,
-      y2: 84,
+    compatibility: {
+      residenceScore: 20,
+      childPlanScore: 16,
+      economicScore: 13,
+      religionScore: 14,
+      languageScore: 22,
     }
   }
 ];
@@ -150,6 +154,29 @@ interface MatchingContainerProps {
 
 export default function MatchingContainer({ user: _user }: MatchingContainerProps) {
   const { lang } = useLanguage();
+
+  // 5분면 레이더 차트 다각형 꼭짓점 계산 헬퍼 함수
+  const getRadarPoints = (mate: any, radiusOverride?: number) => {
+    if (!mate || !mate.compatibility) return '';
+    const maxRadius = radiusOverride || 80;
+    const scores = [
+      { val: mate.compatibility.residenceScore, max: 25 },
+      { val: mate.compatibility.childPlanScore, max: 20 },
+      { val: mate.compatibility.economicScore, max: 15 },
+      { val: mate.compatibility.religionScore, max: 15 },
+      { val: mate.compatibility.languageScore, max: 25 }
+    ];
+
+    return scores.map((s, i) => {
+      const ratio = radiusOverride ? 1 : (s.val / s.max);
+      const angle = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+      const r = maxRadius * ratio;
+      const x = 100 + r * Math.cos(angle);
+      const y = 100 + r * Math.sin(angle);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+  };
+
   const [isSearching, setIsSearching] = useState(false);
   const [matchFound, setMatchFound] = useState(false);
   const [activeMateIndex, setActiveMateIndex] = useState(0);
@@ -168,6 +195,47 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
   const [showMeetingScreen, setShowMeetingScreen] = useState(false);
   const [meetingTimeElapsed, setMeetingTimeElapsed] = useState(0);
   const [liveSubtitles, setLiveSubtitles] = useState('');
+
+  const location = useLocation();
+  const state = location.state as { targetMateId?: string } | null;
+  const [isPending, setIsPending] = useState(false);
+
+  // 라우터 상태 파싱 및 대화 신청 대기열 설정
+  useEffect(() => {
+    if (state?.targetMateId) {
+      const idx = MOCK_MATES.findIndex(m => m.id === state.targetMateId);
+      if (idx !== -1) {
+        setActiveMateIndex(idx);
+        // 가치관 테스트 가짜 설정 (이미 통과한 상태로 시뮬레이션 지원)
+        setMyValues({
+          childPlan: 'WANT_CHILDREN',
+          residenceWill: 'STAY_IN_KR',
+          religion: 'NONE',
+          dualIncome: 'YES',
+          marriageTiming: 'WITHIN_1_YEAR'
+        });
+        setIsPending(true);
+        setMatchFound(false);
+      }
+    }
+  }, [state]);
+
+  // 대화 신청 수락 대기열 2.5초 시뮬레이션 타이머
+  useEffect(() => {
+    if (isPending) {
+      const timer = setTimeout(() => {
+        setIsPending(false);
+        setMatchFound(true);
+        setMessages([
+          { sender: 'system', text: lang === 'ko' ? '🔒 안전한 종단간 암호화 터널이 활성화되었습니다.' : '🔒 安全なエンドツーエンド暗号化トンネルが有効化されました。' },
+          { sender: 'mate', text: lang === 'ko' 
+              ? `안녕하세요! 대화 신청해 주셔서 감사해요. 프로필 보고 가치관이 너무 잘 맞아서 수락했어요 😊` 
+              : `こんにちは！会話申請ありがとうございます。プロフィールを見て価値観がよく合うので受諾しました 😊` }
+        ]);
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [isPending, lang]);
 
   // 채팅 상태
   const [messages, setMessages] = useState<Array<{ sender: 'user' | 'mate' | 'system', text: string }>>([]);
@@ -390,7 +458,7 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
             <div className="h-full flex flex-col justify-center">
               <MarriageTest 
                 lang={lang} 
-                userId={_user?.userId || null} 
+                userId={_user?.uid || null} 
                 onComplete={(values) => {
                   setMyValues(values);
                   setActiveTab('mbti');
@@ -507,94 +575,157 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
                         </div>
 
                         {/* 상세 분석 영역 */}
-                        <div className="flex flex-col gap-4 border-t border-white/5 pt-4">
-                          <div className="flex gap-3 items-center">
-                            <img 
-                              src={MOCK_MATES[activeMateIndex].avatar} 
-                              alt={MOCK_MATES[activeMateIndex].name} 
-                              className="w-12 h-12 rounded-full object-cover border border-[#D4AF37]"
-                            />
+                        <div className="relative overflow-hidden rounded-xl border border-white/5 mt-4 p-1">
+                          
+                          {/* 프리미엄 잠금 오버레이 */}
+                          {!isPremium && (
+                            <div className="absolute inset-0 bg-[#0D0B18]/75 backdrop-blur-md z-20 flex flex-col items-center justify-center p-6 text-center">
+                              <Lock size={32} className="text-[#D4AF37] mb-3 animate-pulse" />
+                              <h4 className="text-xs font-bold text-[#D4AF37] mb-1.5 flex items-center gap-1.5 justify-center">
+                                {lang === 'ko' ? '🔒 AI 정밀 가치관 분석 잠김' : '🔒 AI精密価値観分析ロック'}
+                              </h4>
+                              <p className="text-[10px] text-white/60 leading-relaxed max-w-[240px] mb-4">
+                                {lang === 'ko'
+                                  ? '상대방과의 5분면 정밀 매칭 분석 차트와 AI 맞춤 조언은 프리미엄 멤버십 회원에게만 공개됩니다.'
+                                  : '相手との5面精密マッチング分析チャートとAIカスタムアドバイスは、プレミアムメンバーシップ会員のみに公開されます。'}
+                              </p>
+                              <button
+                                onClick={() => setIsPremium(true)}
+                                className="px-4 py-2 rounded-lg bg-[#D4AF37] hover:bg-[#C29E30] text-[#0D0B18] font-bold text-[10px] shadow-lg transition-all"
+                              >
+                                {lang === 'ko' ? '프리미엄 즉시 업그레이드 💎' : 'プレミアムにアップグレード 💎'}
+                              </button>
+                            </div>
+                          )}
+
+                          <div className={`flex flex-col gap-4 transition-all duration-300 ${!isPremium ? 'blur-sm select-none pointer-events-none' : ''}`}>
+                            <div className="flex gap-3 items-center">
+                              <img 
+                                src={MOCK_MATES[activeMateIndex].avatar} 
+                                alt={MOCK_MATES[activeMateIndex].name} 
+                                className="w-12 h-12 rounded-full object-cover border border-[#D4AF37]"
+                              />
+                              <div>
+                                <h3 className="text-sm font-bold flex items-center gap-1.5">
+                                  {MOCK_MATES[activeMateIndex].name}
+                                  <span className="text-xs font-normal text-white/50">{MOCK_MATES[activeMateIndex].age}세</span>
+                                </h3>
+                                <p className="text-[10px] text-white/40">{MOCK_MATES[activeMateIndex].location}</p>
+                              </div>
+                            </div>
+
+                            <div className="p-3.5 rounded-lg bg-white/5 border border-white/5 text-[11px] leading-relaxed text-white/80">
+                              <span className="block text-[9px] font-bold text-[#D4AF37] uppercase tracking-wider mb-0.5">{t('aiAdvice')}</span>
+                              {lang === 'ko' ? MOCK_MATES[activeMateIndex].aiAdvice : MOCK_MATES[activeMateIndex].aiAdviceJa}
+                            </div>
+
+                            {/* 5분면 SVG 레이더 호합도 차트 */}
+                            <div className="flex flex-col items-center py-2 bg-white/5 border border-white/5 rounded-lg">
+                              <h5 className="text-[10px] font-semibold text-white/40 mb-3">{t('radarTitle')}</h5>
+                              <div className="relative w-36 h-36 border border-white/10 rounded-full flex items-center justify-center scale-95">
+                                {/* 5개 축 중심선 */}
+                                <svg className="absolute w-full h-full pointer-events-none" viewBox="0 0 200 200">
+                                  {[0, 1, 2, 3, 4].map(i => {
+                                    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+                                    const x = 100 + 80 * Math.cos(angle);
+                                    const y = 100 + 80 * Math.sin(angle);
+                                    return (
+                                      <line
+                                        key={i}
+                                        x1="100"
+                                        y1="100"
+                                        x2={x}
+                                        y2={y}
+                                        stroke="rgba(255,255,255,0.08)"
+                                        strokeWidth="1.5"
+                                      />
+                                    );
+                                  })}
+
+                                  {/* 100% 가이드라인 5각형 */}
+                                  <polygon
+                                    points={getRadarPoints(MOCK_MATES[activeMateIndex], 80)}
+                                    fill="none"
+                                    stroke="rgba(255,255,255,0.12)"
+                                    strokeWidth="1.2"
+                                  />
+                                  {/* 60% 가이드라인 5각형 */}
+                                  <polygon
+                                    points={getRadarPoints(MOCK_MATES[activeMateIndex], 48)}
+                                    fill="none"
+                                    stroke="rgba(255,255,255,0.07)"
+                                    strokeWidth="1"
+                                  />
+                                  {/* 30% 가이드라인 5각형 */}
+                                  <polygon
+                                    points={getRadarPoints(MOCK_MATES[activeMateIndex], 24)}
+                                    fill="none"
+                                    stroke="rgba(255,255,255,0.04)"
+                                    strokeWidth="1"
+                                  />
+
+                                  {/* 실제 데이터 다각형 (부드러운 몰핑 애니메이션) */}
+                                  <motion.polygon
+                                    animate={{ points: getRadarPoints(MOCK_MATES[activeMateIndex]) }}
+                                    transition={{ type: 'spring', stiffness: 80, damping: 15 }}
+                                    fill="rgba(212, 175, 55, 0.22)"
+                                    stroke="#D4AF37"
+                                    strokeWidth="2.2"
+                                  />
+                                </svg>
+
+                                {/* 5대 축 라벨 배치 (삼각도 72도 간격 배치 맞춤) */}
+                                <span className="absolute -top-4 text-[8px] text-white/40">{lang === 'ko' ? '거주지' : '居住地'}</span>
+                                <span className="absolute -right-10 top-[40px] text-[8px] text-white/40">{lang === 'ko' ? '자녀관' : '家族計画'}</span>
+                                <span className="absolute -right-6 bottom-[5px] text-[8px] text-white/40">{lang === 'ko' ? '경제관' : '経済観'}</span>
+                                <span className="absolute -left-6 bottom-[5px] text-[8px] text-white/40">{lang === 'ko' ? '종교관' : '宗教観'}</span>
+                                <span className="absolute -left-10 top-[40px] text-[8px] text-white/40">{lang === 'ko' ? '언어' : '言語'}</span>
+                              </div>
+                            </div>
+
+                            {/* 신뢰 배지 교환 */}
                             <div>
-                              <h3 className="text-sm font-bold flex items-center gap-1.5">
-                                {MOCK_MATES[activeMateIndex].name}
-                                <span className="text-xs font-normal text-white/50">{MOCK_MATES[activeMateIndex].age}세</span>
-                              </h3>
-                              <p className="text-[10px] text-white/40">{MOCK_MATES[activeMateIndex].location}</p>
-                            </div>
-                          </div>
-
-                          <div className="p-3.5 rounded-lg bg-white/5 border border-white/5 text-[11px] leading-relaxed text-white/80">
-                            <span className="block text-[9px] font-bold text-[#D4AF37] uppercase tracking-wider mb-0.5">{t('aiAdvice')}</span>
-                            {lang === 'ko' ? MOCK_MATES[activeMateIndex].aiAdvice : MOCK_MATES[activeMateIndex].aiAdviceJa}
-                          </div>
-
-                          {/* 4분면 SVG 레이더 호합도 차트 */}
-                          <div className="flex flex-col items-center py-2 bg-white/5 border border-white/5 rounded-lg">
-                            <h5 className="text-[10px] font-semibold text-white/40 mb-3">{t('radarTitle')}</h5>
-                            <div className="relative w-36 h-36 border border-white/10 rounded-full flex items-center justify-center scale-95">
-                              <div className="absolute w-full h-[1px] bg-white/10" />
-                              <div className="absolute h-full w-[1px] bg-white/10" />
-                              <span className="absolute -top-4 text-[8px] text-white/40">가치관</span>
-                              <span className="absolute -bottom-4 text-[8px] text-white/40">미래설계</span>
-                              <span className="absolute -left-9 text-[8px] text-white/40">의사소통</span>
-                              <span className="absolute -right-10 text-[8px] text-white/40">문화호환</span>
-                              <svg className="absolute w-full h-full pointer-events-none" viewBox="0 0 200 200">
-                                <polygon
-                                  points={`
-                                    100,${100 - MOCK_MATES[activeMateIndex].radar.x1 * 0.8} 
-                                    ${100 + MOCK_MATES[activeMateIndex].radar.y2 * 0.8},100 
-                                    100,${100 + MOCK_MATES[activeMateIndex].radar.y1 * 0.8} 
-                                    ${100 - MOCK_MATES[activeMateIndex].radar.x2 * 0.8},100
-                                  `}
-                                  fill="rgba(212, 175, 55, 0.25)"
-                                  stroke="#D4AF37"
-                                  strokeWidth="2"
-                                />
-                              </svg>
-                            </div>
-                          </div>
-
-                          {/* 신뢰 배지 교환 */}
-                          <div>
-                            <h5 className="text-[10px] font-semibold text-white/40 mb-2">{t('badgeTitle')}</h5>
-                            <div className="grid grid-cols-3 gap-2">
-                              {MOCK_MATES[activeMateIndex].badges.map(badge => {
-                                const isUnlocked = badgesUnlocked[badge.id];
-                                return (
-                                  <div 
-                                    key={badge.id} 
-                                    className={`p-2 rounded-lg border flex flex-col justify-between h-[68px] transition-all ${
-                                      isUnlocked 
-                                        ? 'bg-[#D4AF37]/5 border-[#D4AF37]' 
-                                        : 'bg-white/5 border-white/10'
-                                    }`}
-                                  >
-                                    <div className="flex justify-between items-start">
-                                      <span className="text-[9px] font-medium text-white/80 leading-tight">{badge.label.split(' ')[0]}</span>
+                              <h5 className="text-[10px] font-semibold text-white/40 mb-2">{t('badgeTitle')}</h5>
+                              <div className="grid grid-cols-3 gap-2">
+                                {MOCK_MATES[activeMateIndex].badges.map(badge => {
+                                  const isUnlocked = badgesUnlocked[badge.id];
+                                  return (
+                                    <div 
+                                      key={badge.id} 
+                                      className={`p-2 rounded-lg border flex flex-col justify-between h-[68px] transition-all ${
+                                        isUnlocked 
+                                          ? 'bg-[#D4AF37]/5 border-[#D4AF37]' 
+                                          : 'bg-white/5 border-white/10'
+                                      }`}
+                                    >
+                                      <div className="flex justify-between items-start">
+                                        <span className="text-[9px] font-medium text-white/80 leading-tight">{badge.label.split(' ')[0]}</span>
+                                        {isUnlocked ? (
+                                          <Unlock size={10} className="text-[#D4AF37]" />
+                                        ) : (
+                                          <Lock size={10} className="text-white/40" />
+                                        )}
+                                      </div>
                                       {isUnlocked ? (
-                                        <Unlock size={10} className="text-[#D4AF37]" />
+                                        <span className="text-[8px] text-[#D4AF37] font-medium">{t('verified')}</span>
                                       ) : (
-                                        <Lock size={10} className="text-white/40" />
+                                        <button
+                                          onClick={() => {
+                                            setSelectedBadge(badge);
+                                            setRequestModalOpen(true);
+                                          }}
+                                          className="w-full py-0.5 mt-1 rounded bg-white/5 border border-white/10 text-[8px] hover:bg-white/10 text-white"
+                                        >
+                                          {t('badgeRequest').substring(0, 4)}..
+                                        </button>
                                       )}
                                     </div>
-                                    {isUnlocked ? (
-                                      <span className="text-[8px] text-[#D4AF37] font-medium">{t('verified')}</span>
-                                    ) : (
-                                      <button
-                                        onClick={() => {
-                                          setSelectedBadge(badge);
-                                          setRequestModalOpen(true);
-                                        }}
-                                        className="w-full py-0.5 mt-1 rounded bg-white/5 border border-white/10 text-[8px] hover:bg-white/10 text-white"
-                                      >
-                                        {t('badgeRequest').substring(0, 4)}..
-                                      </button>
-                                    )}
-                                  </div>
-                                );
-                              })}
+                                  );
+                                })}
+                              </div>
                             </div>
                           </div>
+
                         </div>
                       </div>
                     )}
@@ -633,6 +764,21 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
                 {lang === 'ko'
                   ? '🔒 가치관 성향 검사를 완료하시면 보안 안심 대화 터널(채팅방)이 개설됩니다.'
                   : '🔒 価値観診断を完了すると、セキュリティ安全会話トンネルが開設されます。'}
+              </p>
+            </div>
+          ) : isPending ? (
+            <div className="h-full min-h-[520px] rounded-2xl bg-[#141221] border border-[#D4AF37]/20 flex flex-col items-center justify-center p-6 text-center shadow-lg relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-[#D4AF37]/5 rounded-full blur-2xl pointer-events-none" />
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 1.8, ease: "linear" }}
+                className="w-10 h-10 rounded-full border-2 border-t-[#D4AF37] border-white/5 mb-5 shrink-0"
+              />
+              <h4 className="text-xs font-bold text-[#D4AF37] mb-2 flex items-center gap-1.5 justify-center animate-pulse">
+                <span>💌 대화 신청 수락 대기 중</span>
+              </h4>
+              <p className="text-[10px] text-white/50 leading-relaxed max-w-[220px]">
+                {MOCK_MATES[activeMateIndex].name.split(' ')[0]} 님에게 안심 대화 신청을 보냈습니다. 상대방의 수락 결정을 기다리는 중입니다...
               </p>
             </div>
           ) : (
@@ -741,49 +887,6 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
 
       </div>
 
-      {/* 하단부: Marriage-MBTI 가치관 검사 영역 */}
-      <div className="w-full max-w-5xl">
-        {!myValues ? (
-          <MarriageTest 
-            lang={lang} 
-            userId={_user?.userId || null} 
-            onComplete={(values) => {
-              setMyValues(values);
-              // 테스트 완료 시 즉시 추천 목록 로드 시뮬레이션
-              setTimeout(() => {
-                startSearch();
-              }, 600);
-            }}
-          />
-        ) : (
-          <div className="w-full rounded-2xl bg-md3-surface border border-white/10 p-6">
-            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <Users size={14} />
-              {lang === 'ko' ? '나의 결혼 가치관 성향 분석' : '私の結婚価値観タイプ分析'}
-            </h3>
-            <div className="p-5 rounded-xl bg-md3-background border border-md3-primary/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <div>
-                <h4 className="text-sm font-bold text-md3-primary mb-1">
-                  {myValues.mbtiType}
-                </h4>
-                <p className="text-xs text-white/60 leading-relaxed max-w-xl">
-                  {lang === 'ko'
-                    ? '가치관 진단이 완료되어 회원님에게 가장 높은 가치관 점수를 획득한 최적의 매칭 상대를 추천 중입니다. 추천 목록 및 대화 가이드를 확인해 보세요!'
-                    : '価値観診断が完了しました。あなたと最も価値観スコアが高い最適なマッチング相手をおすすめしています。推薦リストや会話ガイドを確認してください！'}
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  setMyValues(null); // 다시 진단하기
-                }}
-                className="px-4 py-2 rounded bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-xs shrink-0 text-white"
-              >
-                {lang === 'ko' ? '다시 검사하기 🔄' : '再診断する 🔄'}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
 
       {/* 상호주의 정보 공개 요청 모달 */}
       <AnimatePresence>
@@ -977,25 +1080,57 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
 
                 {/* 상대방 이름 및 프로필 배지 */}
-                <div className="absolute top-6 left-6 z-10 bg-black/40 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/10 flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-full border border-white/20 overflow-hidden">
-                    <img src={MOCK_MATES[activeMateIndex].avatar} alt="" className="w-full h-full object-cover" />
+                <div className="absolute top-6 left-6 z-10 bg-[#0D0B18]/70 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 flex flex-col gap-2 shadow-2xl max-w-xs">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-full border border-[#D4AF37] overflow-hidden shadow-lg shrink-0">
+                      <img src={MOCK_MATES[activeMateIndex].avatar} alt="" className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-white leading-none flex items-center gap-1.5">
+                        {MOCK_MATES[activeMateIndex].name}
+                        <span className="text-[10px] font-normal text-white/50">{MOCK_MATES[activeMateIndex].age}세</span>
+                      </h4>
+                      <p className="text-[9px] text-white/40 mt-1 leading-none">{MOCK_MATES[activeMateIndex].location}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-white leading-none">{MOCK_MATES[activeMateIndex].name}</p>
-                    <p className="text-[9px] text-[#FF8A80] font-semibold mt-1">{t('verified')}</p>
+                  
+                  {/* 신뢰 배지 실시간 동적 연동 리스트 */}
+                  <div className="flex gap-1.5 border-t border-white/5 pt-1.5 mt-0.5">
+                    {MOCK_MATES[activeMateIndex].badges.map(badge => {
+                      const isUnlocked = badgesUnlocked[badge.id];
+                      return (
+                        <div 
+                          key={badge.id}
+                          className={`px-1.5 py-0.5 rounded text-[8px] font-bold flex items-center gap-1 border transition-all ${
+                            isUnlocked 
+                              ? 'bg-[#D4AF37]/15 border-[#D4AF37]/35 text-[#D4AF37] shadow-sm shadow-[#D4AF37]/5' 
+                              : 'bg-white/5 border-white/5 text-white/30'
+                          }`}
+                          title={`${badge.label} (${isUnlocked ? '검증완료 / ' + badge.expired + ' 유효' : '잠금상태'})`}
+                        >
+                          {isUnlocked ? <Unlock size={8} /> : <Lock size={8} />}
+                          <span>{badge.label.split(' ')[0]}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* 실시간 와이드 자막 번역 인터페이스 */}
+                {/* 실시간 와이드 자막 번역 인터페이스 (시네마틱 투명도 조절 글래스모피즘 카드) */}
                 <div className="relative z-10 w-full p-6">
-                  <div className="w-full bg-black/60 backdrop-blur-lg border border-white/15 rounded-2xl p-4 shadow-xl">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-[10px] uppercase font-bold tracking-widest text-[#FF8A80]">AI Live Translation</span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#FF8A80] animate-pulse" />
+                  <div className="w-full bg-[#110E18]/60 backdrop-blur-md border border-white/10 rounded-2xl p-5 shadow-2xl relative overflow-hidden">
+                    {/* 글래스모피즘 그라데이션 광택 표현 */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-white/[0.02] via-transparent to-transparent pointer-events-none" />
+                    
+                    <div className="flex items-center justify-between mb-2.5 relative z-10">
+                      <div className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="text-[9px] uppercase font-bold tracking-widest text-emerald-400">AI REAL-TIME TRANSLATION</span>
+                      </div>
+                      <span className="text-[8px] text-white/30 tracking-wider">Gemini WebRTC Core</span>
                     </div>
-                    <p className="text-sm font-semibold text-emerald-400 leading-relaxed">
-                      🤖 {liveSubtitles}
+                    <p className="text-sm sm:text-base font-bold text-white/95 tracking-wide leading-loose min-h-[48px] relative z-10 drop-shadow-sm select-none">
+                      🤖 {liveSubtitles || (lang === 'ko' ? '대화가 시작되면 AI가 실시간으로 통역을 진행합니다...' : '会話が始まるとAIがリアルタイムで通訳を行います...')}
                     </p>
                   </div>
                 </div>

@@ -440,7 +440,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             {/* ── Free (일반) ── */}
             <motion.div
-              className="border border-white/10 rounded-2xl p-8 flex flex-col"
+              className="border border-white/5 rounded-2xl p-8 flex flex-col bg-[#141221]/40 backdrop-blur-sm shadow-xl"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0 }}
@@ -468,7 +468,7 @@ export default function LandingPage() {
               <div className="flex flex-col gap-3">
                 <button
                   disabled
-                  className="w-full h-[50px] rounded-lg font-medium text-[15px] flex items-center justify-center gap-2 border border-white/10 bg-white/5 text-white/40 cursor-default"
+                  className="w-full h-[50px] rounded-lg font-medium text-[15px] flex items-center justify-center gap-2 border border-white/5 bg-white/5 text-white/40 cursor-default"
                 >
                   기본 활성화됨
                 </button>
@@ -477,7 +477,7 @@ export default function LandingPage() {
 
             {/* ── Basic (베이직) ── */}
             <motion.div
-              className="border border-white/10 rounded-2xl p-8 flex flex-col relative"
+              className="border border-[#D4AF37]/15 rounded-2xl p-8 flex flex-col relative bg-[#141221]/50 backdrop-blur-sm shadow-xl"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.1 }}
@@ -517,14 +517,14 @@ export default function LandingPage() {
 
             {/* ── Pro (프로 / Featured) ── */}
             <motion.div
-              className="border border-white/25 rounded-2xl p-8 flex flex-col relative bg-white/[0.03]"
+              className="border border-[#D4AF37]/35 rounded-2xl p-8 flex flex-col relative bg-gradient-to-b from-[#141221]/80 to-[#0D0B18]/80 backdrop-blur-md shadow-2xl"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
               viewport={{ once: true, amount: 0.3 }}
             >
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                <span className="bg-white text-black text-[11px] font-bold tracking-[0.1em] uppercase px-4 py-1.5 rounded-full">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 shadow-lg">
+                <span className="bg-[#D4AF37] text-[#0D0B18] text-[11px] font-extrabold tracking-[0.1em] uppercase px-4 py-1.5 rounded-full">
                   Premium
                 </span>
               </div>
@@ -537,8 +537,8 @@ export default function LandingPage() {
                 무제한 번역 채팅과 실시간 오디오/비디오 번역 통화, 그리고 보너스 하트 제공으로 언어 장벽을 완전히 허뭅니다.
               </p>
               <ul className="flex flex-col gap-3 mb-10 flex-1">
-                <li className="flex items-center gap-3 text-[#FF8A80] text-[13px] font-bold">
-                  <span className="text-[#FF8A80]">✓</span> 가입 즉시 보너스 하트 100개 지급
+                <li className="flex items-center gap-3 text-[#D4AF37] text-[13px] font-bold">
+                  <span className="text-[#D4AF37]">✓</span> 가입 즉시 보너스 하트 100개 지급
                 </li>
                 <li className="flex items-center gap-3 text-white/60 text-[13px]">
                   <span className="text-white/30">✓</span> 1:1 실시간 텍스트 번역 채팅 30일 완전 무제한

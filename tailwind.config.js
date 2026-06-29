@@ -4,8 +4,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Space Mono"', 'monospace'],
-        serif: ['"Space Mono"', 'monospace'],
+        sans: ['"Noto Sans KR"', '"Noto Sans JP"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        serif: ['"Noto Sans KR"', '"Noto Sans JP"', 'sans-serif'],
         mono: ['"Space Mono"', 'monospace'],
       },
       colors: {

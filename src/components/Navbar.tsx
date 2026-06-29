@@ -12,8 +12,8 @@ import { Link } from 'react-router-dom';
 
 interface NavbarProps {
   entranceComplete: boolean;
-  currentView?: 'landing' | 'matching';
-  setCurrentView?: (view: 'landing' | 'matching') => void;
+  currentView?: 'landing' | 'matching' | 'explore';
+  setCurrentView?: (view: 'landing' | 'matching' | 'explore') => void;
 }
 
 export function Navbar({ entranceComplete, currentView: _currentView, setCurrentView }: NavbarProps) {
@@ -44,10 +44,10 @@ export function Navbar({ entranceComplete, currentView: _currentView, setCurrent
           <div className="flex items-center gap-2">
             {/* Logo pill */}
             <motion.div
-              className={`h-12 px-5 bg-white/15 backdrop-blur-md rounded-[14px] flex items-center gap-2.5 cursor-pointer ${
+              className={`h-12 px-5 bg-[#141221]/80 border border-white/5 backdrop-blur-md rounded-[14px] flex items-center gap-2.5 cursor-pointer shadow-lg ${
                 menuOpen ? 'hidden md:flex' : 'flex'
               }`}
-              whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.22)' }}
+              whileHover={{ scale: 1.02, backgroundColor: 'rgba(20,18,33,0.9)', borderColor: 'rgba(212,175,55,0.3)' }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setCurrentView?.('landing')}
             >
@@ -59,7 +59,7 @@ export function Navbar({ entranceComplete, currentView: _currentView, setCurrent
 
             {/* Expanding menu pill */}
             <motion.div
-              className="h-12 rounded-[14px] bg-white/15 backdrop-blur-md flex items-center overflow-hidden"
+              className="h-12 rounded-[14px] bg-[#141221]/80 border border-white/5 backdrop-blur-md flex items-center overflow-hidden shadow-lg"
               animate={{ width: menuOpen ? 290 : 48 }}
               transition={{ type: 'spring', stiffness: 350, damping: 28 }}
             >
@@ -70,7 +70,7 @@ export function Navbar({ entranceComplete, currentView: _currentView, setCurrent
                   width: menuOpen ? 36 : 48,
                   height: menuOpen ? 36 : 48,
                   borderRadius: menuOpen ? 11 : 14,
-                  backgroundColor: menuOpen ? 'rgba(255,255,255,0.1)' : 'transparent',
+                  backgroundColor: menuOpen ? 'rgba(255,255,255,0.05)' : 'transparent',
                   marginLeft: menuOpen ? 6 : 0,
                 }}
                 onClick={() => setMenuOpen(!menuOpen)}
@@ -105,6 +105,14 @@ export function Navbar({ entranceComplete, currentView: _currentView, setCurrent
                     >
                       <ScrambleText text="Metrics" isHovered={metricsHovered} />
                     </button>
+                    {user && (
+                      <button
+                        className="text-[16px] font-bold text-[#D4AF37] hover:text-[#C29E30] transition-colors cursor-pointer bg-transparent border-none"
+                        onClick={() => setCurrentView?.('explore')}
+                      >
+                        Explore
+                      </button>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -116,19 +124,19 @@ export function Navbar({ entranceComplete, currentView: _currentView, setCurrent
             {/* Sign In / User button */}
             {user ? (
               <div className="flex items-center gap-2">
-                <div className="h-12 px-5 bg-white/10 backdrop-blur-md rounded-[14px] flex items-center gap-3">
+                <div className="h-12 px-5 bg-[#141221]/80 border border-white/5 backdrop-blur-md rounded-[14px] flex items-center gap-3 shadow-lg">
                   {user.photoURL ? (
                     <img
-                      src={user.photoURL}
+                       src={user.photoURL}
                       alt=""
                       className="w-7 h-7 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-white text-[12px] font-bold">
+                    <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-white text-[12px] font-bold border border-white/10">
                       {(user.displayName?.[0] || user.email?.[0] || 'U').toUpperCase()}
                     </div>
                   )}
-                  <span className="text-[14px] text-white/80 max-w-[120px] truncate">
+                  <span className="text-[14px] text-white/80 max-w-[120px] truncate font-medium">
                     {user.displayName || user.email?.split('@')[0] || 'User'}
                   </span>
                   
@@ -145,10 +153,10 @@ export function Navbar({ entranceComplete, currentView: _currentView, setCurrent
                   >
                     {lang === 'ko' ? '본인인증' : '本人確認'}
                   </Link>
-
+ 
                   <button
                     onClick={signOut}
-                    className="text-[12px] text-white/40 hover:text-white/80 transition-colors cursor-pointer bg-transparent border-none ml-1"
+                    className="text-[12px] text-white/40 hover:text-[#D4AF37] transition-colors cursor-pointer bg-transparent border-none ml-1"
                   >
                     Sign Out
                   </button>
@@ -156,7 +164,7 @@ export function Navbar({ entranceComplete, currentView: _currentView, setCurrent
               </div>
             ) : (
               <motion.button
-                className="h-12 px-5 bg-white/10 backdrop-blur-md rounded-[14px] flex items-center gap-2 cursor-pointer border-none text-white/85 text-[15px] font-medium hover:bg-white/20 transition-colors"
+                className="h-12 px-5 bg-[#141221]/80 border border-white/5 backdrop-blur-md rounded-[14px] flex items-center gap-2 cursor-pointer text-white/85 text-[15px] font-medium hover:bg-[#141221] hover:border-[#D4AF37]/35 shadow-lg transition-colors"
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setAuthOpen(true)}
               >
@@ -166,7 +174,7 @@ export function Navbar({ entranceComplete, currentView: _currentView, setCurrent
 
             {/* Language toggle selector */}
             <motion.button
-              className="h-12 px-4 bg-white/10 backdrop-blur-md rounded-[14px] flex items-center justify-center cursor-pointer border-none text-white/80 hover:bg-white/20 transition-all font-medium text-[14px]"
+              className="h-12 px-4 bg-[#141221]/80 border border-[#D4AF37]/15 backdrop-blur-md rounded-[14px] flex items-center justify-center cursor-pointer text-[#D4AF37] hover:bg-[#141221] hover:border-[#D4AF37]/35 shadow-lg transition-all font-semibold text-[13px] tracking-wide"
               onClick={() => setLang(lang === 'ko' ? 'ja' : 'ko')}
               whileTap={{ scale: 0.97 }}
             >
@@ -175,15 +183,15 @@ export function Navbar({ entranceComplete, currentView: _currentView, setCurrent
 
              {/* Download / Start Match button */}
             <motion.button
-              className="h-12 px-6 bg-white rounded-full flex items-center gap-2.5 cursor-pointer border-none"
-              whileHover={{ scale: 1.03, backgroundColor: '#e2e2e6' }}
+              className="h-12 px-6 bg-[#D4AF37] rounded-full flex items-center gap-2.5 cursor-pointer border-none shadow-lg"
+              whileHover={{ scale: 1.03, backgroundColor: '#C29E30' }}
               whileTap={{ scale: 0.97 }}
               onMouseEnter={() => setDownloadHovered(true)}
               onMouseLeave={() => setDownloadHovered(false)}
-              onClick={() => setCurrentView?.('matching')}
+              onClick={() => setCurrentView?.('explore')}
             >
-              <Heart size={16} className="text-black fill-current" />
-              <span className="text-black text-[16px] font-semibold">
+              <Heart size={15} className="text-[#0D0B18] fill-current" />
+              <span className="text-[#0D0B18] text-[15px] font-bold tracking-wide">
                 <ScrambleText text={SITE_CONFIG[lang].nav.downloadLabel} isHovered={downloadHovered} />
               </span>
             </motion.button>
@@ -196,7 +204,7 @@ export function Navbar({ entranceComplete, currentView: _currentView, setCurrent
           <div className="flex items-center gap-1.5 flex-1 min-w-0">
             {/* Logo pill (collapses when menu open) */}
             <motion.div
-              className="h-9 px-3 bg-white/15 backdrop-blur-md rounded-[10px] flex items-center gap-2 overflow-hidden shrink-0 cursor-pointer"
+              className="h-9 px-3 bg-[#141221]/80 border border-white/5 backdrop-blur-md rounded-[10px] flex items-center gap-2 overflow-hidden shrink-0 cursor-pointer shadow-md"
               animate={{ width: menuOpen ? 0 : 'auto', opacity: menuOpen ? 0 : 1, paddingLeft: menuOpen ? 0 : 12, paddingRight: menuOpen ? 0 : 12 }}
               transition={{ type: 'spring', stiffness: 350, damping: 28 }}
               onClick={() => setCurrentView?.('landing')}
@@ -248,6 +256,14 @@ export function Navbar({ entranceComplete, currentView: _currentView, setCurrent
                     >
                       Metrics
                     </button>
+                    {user && (
+                      <button
+                        className="text-[13px] font-bold text-[#D4AF37] cursor-pointer bg-transparent border-none"
+                        onClick={() => setCurrentView?.('explore')}
+                      >
+                        {lang === 'ko' ? '탐색' : '探訪'}
+                      </button>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
