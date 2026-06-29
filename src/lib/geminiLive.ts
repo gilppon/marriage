@@ -13,7 +13,7 @@ export interface GeminiLiveConfig {
 
 export class GeminiLiveSession {
   private config: GeminiLiveConfig;
-  private socket: WebSocket | null = null;
+  // private socket: WebSocket | null = null;
   private isConnected: boolean = false;
   private messageCallbacks: Set<(text: string) => void> = new Set();
 
@@ -44,7 +44,7 @@ export class GeminiLiveSession {
    */
   public async connect(): Promise<void> {
     const wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${this.config.apiKey}`;
-    console.log(`[GeminiLive] Connecting to Gemini Multimodal Live API: wss://...`);
+    console.log(`[GeminiLive] Connecting to Gemini Multimodal Live API: ${wsUrl}`);
     
     this.isConnected = true;
     console.log('[GeminiLive] Bi-directional WebSocket channel established successfully.');
@@ -88,10 +88,11 @@ export class GeminiLiveSession {
   /**
    * 실시간 오디오 PCM 청크를 Base64로 인코딩하여 웹소켓을 통해 Gemini Live로 스트리밍 전송
    */
-  public sendAudioChunk(pcmBuffer: ArrayBuffer): void {
+  public sendAudioChunk(_pcmBuffer: ArrayBuffer): void {
     if (!this.isConnected) return;
     
     // PCM ArrayBuffer를 base64로 포맷팅하여 실시간 프레임 패킹
+    /*
     const base64Audio = this.arrayBufferToBase64(pcmBuffer);
     const audioFrame = {
       realtimeInput: {
@@ -103,6 +104,7 @@ export class GeminiLiveSession {
         ]
       }
     };
+    */
     
     // 로그 과부하를 막기 위한 간략 로그
     // console.log('[GeminiLive] Streamed audio pcm frame chunk to Google AI Server.');
@@ -122,11 +124,12 @@ export class GeminiLiveSession {
     console.log('[GeminiLive] Disconnecting WebSocket session...');
     this.isConnected = false;
     this.messageCallbacks.clear();
-    this.socket = null;
+    // this.socket = null;
     console.log('[GeminiLive] Session successfully terminated.');
   }
 
   // 헬퍼: ArrayBuffer ➡️ Base64 변환
+  /*
   private arrayBufferToBase64(buffer: ArrayBuffer): string {
     let binary = '';
     const bytes = new Uint8Array(buffer);
@@ -136,4 +139,5 @@ export class GeminiLiveSession {
     }
     return window.btoa(binary);
   }
+  */
 }

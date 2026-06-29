@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Shield, Lock, Unlock, Phone, Heart, Users, RefreshCw, Send, 
+  Shield, Lock, Unlock, Heart, Users, RefreshCw, Send, 
   AlertTriangle, Eye, Compass, X, Calendar, Video, UserCheck, 
   Volume2, VideoOff, MicOff, Clock 
 } from 'lucide-react';
-import Matter from 'matter-js';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { GeminiLiveSession } from '../../lib/geminiLive';
 import { AgoraLiveManager } from '../../lib/agoraLive';
+import MarriageTest from './MarriageTest';
 
 // 번역 데이터 (ko / ja)
 const TRANSLATIONS = {
@@ -16,7 +16,7 @@ const TRANSLATIONS = {
     matchingTitle: 'AI 가치관 매칭 터널',
     searching: '가치관 부합 대상 탐색 중...',
     matchSuccess: '🎉 매칭 성공! 신원 검증 메이트 연결됨',
-    compatScore: '가치관 호합도',
+    compatScore: '가치관 호환도',
     radarTitle: '📊 4분면 가치관 부합 분석',
     aiAdvice: '💡 AI 매칭 분석 조언',
     badgeTitle: '🛡️ 상대 메이트의 신뢰 배지',
@@ -55,18 +55,28 @@ const TRANSLATIONS = {
     badgeTitle: '🛡️ 相手メイトの信頼バッジ',
     badgeRequest: '🔒 相互主義バッジ公開リクエスト',
     badgeDesc: '相手にバッジロック解除同意リクエストを送信します。相互主義の原則に基づき、自身のバッジも公開されます。',
-    sendRequest: '敬語でリクエスト送信 🚀',
+    sendRequest: '丁寧な敬語でリクエスト送信 🚀',
     cancel: 'キャンセル',
     verified: '検証済み',
     masked: '相互同意後に開示',
-    chatPlaceholder: 'メッセージを入力してください（AIスキャン監視作動中）',
+    chatPlaceholder: 'メッセージを入力してください（AIリアルタイム詐欺監視作動中）',
     send: '送信',
     scamWarning: '🚨 AI監視: 金銭のやり取りや個人情報の受け渡しは固く禁じられています！',
-    burnoutTitle: 'マッチングアプリのバーンアウト原因と解決策 (ドラッグ可能)',
+    burnoutTitle: 'マッチングアプリのバーンアウト原因とBest-Saikoの解決策 (ドラッグ可能)',
     upgradeBtn: 'プレミアム会員アップグレード (認証バッジフィルター有効化)',
     premiumStatus: '👑 プレミアム会員アクティブ',
     startMatchingBtn: 'マッチングプール待機列に合流',
     matchingQueueDesc: 'Firebase認証および本人確認審査済みの会員対象リアルタイムマッチング',
+    videoCallReservation: 'ビデオ通話の約束を立てる 🗓️',
+    makeReservation: 'ビデオ通話を予約する',
+    enterVideoMeeting: '安心ビデオミーティングに入場する 📹',
+    videoMeetingStatus: '安心ビデオミーティング (Assured Video Meeting)',
+    privacySafe: 'プライバシー保護中',
+    encryptedAlert: '映像と音声のエンドツーエンド暗号化適用中',
+    bgBlurAlert: '背景ぼかし(Background Blur)モード稼働中',
+    requestIntermission: '少し休憩をリクエスト ☕',
+    endRespectfully: '丁寧に通話を終了する 👋',
+    reservationCompleted: '🗓️ [ビデオ通話予約完了] 相手とのビデオ通話の約束が成立しました。',
   }
 };
 
@@ -164,12 +174,13 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
   const [inputVal, setInputVal] = useState('');
   const [scamAlert, setScamAlert] = useState(false);
 
-  // Matter.js 및 미디어 통신 관련 ref
-  const sceneRef = useRef<HTMLDivElement>(null);
-  const engineRef = useRef<Matter.Engine | null>(null);
+  // 미디어 통신 관련 ref
   const timerRef = useRef<any>(null);
   const agoraManagerRef = useRef<AgoraLiveManager | null>(null);
   const geminiSessionRef = useRef<GeminiLiveSession | null>(null);
+
+  // Marriage-MBTI 가치관 결과 상태
+  const [myValues, setMyValues] = useState<any>(null);
 
   const t = (key: keyof typeof TRANSLATIONS.ko) => {
     return TRANSLATIONS[lang][key] || TRANSLATIONS.ko[key];
@@ -282,6 +293,14 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
       return;
     }
 
+    if (!myValues) {
+      alert(lang === 'ko' 
+        ? '⚠️ 매칭 풀에 참여하기 전, 하단의 [1분 결혼 가치관 검사]를 완료해 주셔야 합니다.' 
+        : '⚠️ マッチングプールに参加する前に、下部の [1分間結婚価値観テスト] を完了してください。'
+      );
+      return;
+    }
+
     setIsSearching(true);
     setMatchFound(false);
     setIsBooked(false);
@@ -337,140 +356,6 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
     ]);
   };
 
-  // Matter.js 피지컬 샌드박스 설정
-  useEffect(() => {
-    if (!sceneRef.current) return;
-
-    // 기존 DOM 및 엔진 청소
-    sceneRef.current.innerHTML = '';
-    if (engineRef.current) {
-      Matter.World.clear(engineRef.current.world, false);
-      Matter.Engine.clear(engineRef.current);
-    }
-
-    const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint } = Matter;
-
-    const width = sceneRef.current.clientWidth || 600;
-    const height = 300;
-
-    const engine = Engine.create({
-      gravity: { y: 0.8 }
-    });
-    engineRef.current = engine;
-
-    const render = Render.create({
-      element: sceneRef.current,
-      engine: engine,
-      options: {
-        width,
-        height,
-        wireframes: false,
-        background: '#181524',
-      }
-    });
-
-    Render.run(render);
-
-    const runner = Runner.create();
-    Runner.run(runner, engine);
-
-    // 경계 벽 생성
-    const wallOptions = { isStatic: true, render: { visible: false } };
-    const ground = Bodies.rectangle(width / 2, height + 30, width * 2, 60, wallOptions);
-    const leftWall = Bodies.rectangle(-30, height / 2, 60, height * 2, wallOptions);
-    const rightWall = Bodies.rectangle(width + 30, height / 2, 60, height * 2, wallOptions);
-    const ceiling = Bodies.rectangle(width / 2, -30, width * 2, 60, wallOptions);
-
-    Composite.add(engine.world, [ground, leftWall, rightWall, ceiling]);
-
-    // 번아웃 원인 블록 (빨간색/보라색 톤)
-    const burnoutItems = [
-      { text: lang === 'ko' ? '성비 8:2 스와이프 피로' : '性比8:2スワイプ疲労', fill: '#FF5252' },
-      { text: lang === 'ko' ? '외모/스펙 줄세우기' : '外見・スペック並べ', fill: '#E040FB' },
-      { text: lang === 'ko' ? '가짜 프로필/스캠' : 'サクラ・ロマンス詐欺', fill: '#FF1744' },
-    ];
-
-    // Best-Saiko 대안 블록 (사쿠라 코랄 핑크 & 에메랄드 톤)
-    const alternativeItems = [
-      { text: lang === 'ko' ? '미혼/재직 서류 인증' : '独身・仕事公認書類認証', fill: '#FF8A80' },
-      { text: lang === 'ko' ? '가치관 세미 블라인드' : '価値観ブラインドマッチ', fill: '#00E5FF' },
-      { text: lang === 'ko' ? '상호주의 배지 공개' : '相互主義バッジ開示', fill: '#69F0AE' },
-    ];
-
-    const blocks: Matter.Body[] = [];
-
-    // 블록 생성 함수
-    const createBlock = (text: string, x: number, y: number, color: string) => {
-      const w = text.length * 12 + 20;
-      const h = 40;
-      const block = Bodies.rectangle(x, y, w, h, {
-        restitution: 0.6,
-        friction: 0.3,
-        render: {
-          fillStyle: color,
-          strokeStyle: '#ffffff',
-          lineWidth: 1
-        }
-      });
-      // 렌더링 시 텍스트 보존을 위한 속성 추가
-      (block as any).customText = text;
-      return block;
-    };
-
-    burnoutItems.forEach((item, idx) => {
-      const block = createBlock(item.text, width / 4 + idx * 40, 50, item.fill);
-      blocks.push(block);
-    });
-
-    alternativeItems.forEach((item, idx) => {
-      const block = createBlock(item.text, (width * 3) / 4 - idx * 40, 80, item.fill);
-      blocks.push(block);
-    });
-
-    Composite.add(engine.world, blocks);
-
-    // 마우스 드래그 컨트롤 추가
-    const mouse = Mouse.create(render.canvas);
-    const mouseConstraint = MouseConstraint.create(engine, {
-      mouse: mouse,
-      constraint: {
-        stiffness: 0.2,
-        render: { visible: false }
-      }
-    });
-
-    Composite.add(engine.world, mouseConstraint);
-    render.mouse = mouse;
-
-    // Matter.js 캔버스 위에 글자 그리기 이벤트 연동
-    Matter.Events.on(render, 'afterRender', () => {
-      const context = render.context;
-      context.font = 'bold 12px monospace';
-      context.textAlign = 'center';
-      context.textBaseline = 'middle';
-
-      const bodies = Composite.allBodies(engine.world);
-      bodies.forEach(body => {
-        const text = (body as any).customText;
-        if (text) {
-          context.save();
-          context.translate(body.position.x, body.position.y);
-          context.rotate(body.angle);
-          context.fillStyle = '#0D0B14'; // 다크 텍스트로 블록 내부 선명도 증가
-          context.fillText(text, 0, 0);
-          context.restore();
-        }
-      });
-    });
-
-    return () => {
-      Render.stop(render);
-      Runner.stop(runner);
-      if (engineRef.current) {
-        Matter.Engine.clear(engineRef.current);
-      }
-    };
-  }, [lang]);
 
   return (
     <div className="w-full min-h-screen bg-md3-background text-white px-4 py-8 flex flex-col items-center">
@@ -772,17 +657,48 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
 
       </div>
 
-      {/* 하단부: Matter.js 피지컬 샌드박스 영역 */}
-      <div className="w-full max-w-5xl rounded-2xl bg-md3-surface border border-white/10 p-6">
-        <h3 className="text-xs font-semibold text-white/50 uppercase tracking-widest mb-4 flex items-center gap-2">
-          <Users size={14} />
-          {t('burnoutTitle')}
-        </h3>
-        
-        <div 
-          ref={sceneRef} 
-          className="w-full h-[300px] rounded-xl overflow-hidden border border-white/10 relative"
-        />
+      {/* 하단부: Marriage-MBTI 가치관 검사 영역 */}
+      <div className="w-full max-w-5xl">
+        {!myValues ? (
+          <MarriageTest 
+            lang={lang} 
+            userId={_user?.userId || null} 
+            onComplete={(values) => {
+              setMyValues(values);
+              // 테스트 완료 시 즉시 추천 목록 로드 시뮬레이션
+              setTimeout(() => {
+                startSearch();
+              }, 600);
+            }}
+          />
+        ) : (
+          <div className="w-full rounded-2xl bg-md3-surface border border-white/10 p-6">
+            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <Users size={14} />
+              {lang === 'ko' ? '나의 결혼 가치관 성향 분석' : '私の結婚価値観タイプ分析'}
+            </h3>
+            <div className="p-5 rounded-xl bg-md3-background border border-md3-primary/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h4 className="text-sm font-bold text-md3-primary mb-1">
+                  {myValues.mbtiType}
+                </h4>
+                <p className="text-xs text-white/60 leading-relaxed max-w-xl">
+                  {lang === 'ko'
+                    ? '가치관 진단이 완료되어 회원님에게 가장 높은 가치관 점수를 획득한 최적의 매칭 상대를 추천 중입니다. 추천 목록 및 대화 가이드를 확인해 보세요!'
+                    : '価値観診断が完了しました。あなたと最も価値観スコアが高い最適なマッチング相手をおすすめしています。推薦リストや会話ガイドを確認してください！'}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setMyValues(null); // 다시 진단하기
+                }}
+                className="px-4 py-2 rounded bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-xs shrink-0 text-white"
+              >
+                {lang === 'ko' ? '다시 검사하기 🔄' : '再診断する 🔄'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 상호주의 정보 공개 요청 모달 */}

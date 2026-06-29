@@ -5,6 +5,8 @@ export interface MarriageValues {
   dualIncome: 'YES' | 'NO' | 'FLEXIBLE';
   marriageTiming: 'WITHIN_1_YEAR' | 'WITHIN_2_YEARS' | 'DEPENDS';
   languageSkill?: 'BASIC' | 'INTERMEDIATE' | 'FLUENT';
+  mbtiType?: string;
+  testedAt?: Date;
 }
 
 export interface MarriageCompatibilityScore {

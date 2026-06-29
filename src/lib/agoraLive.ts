@@ -28,7 +28,7 @@ export class AgoraLiveManager {
    */
   public async joinMeeting(
     onRemoteUserJoined: (user: any) => void,
-    onRemoteUserLeft: (uid: string | number) => void
+    _onRemoteUserLeft: (uid: string | number) => void
   ): Promise<void> {
     console.log(`[AgoraRTC] Joining channel: ${this.config.channel}...`);
     this.isJoined = true;
