@@ -10,11 +10,11 @@ export default {
       },
       colors: {
         md3: {
-          primary: '#FF8A80',
+          primary: '#D4AF37',
           secondary: '#3F51B5',
-          background: '#0D0B14',
-          surface: '#181524',
-          accent: '#00E5FF',
+          background: '#0D0B18',
+          surface: '#141221',
+          accent: '#F3E5AB',
         }
       }
     },

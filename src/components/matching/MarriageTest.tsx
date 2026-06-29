@@ -60,11 +60,11 @@ export default function MarriageTest({ lang, userId, onComplete, onOpenAuthModal
 
   // 리커트 선택 항목
   const OPTIONS = [
-    { value: 5, labelKo: '매우 그렇다', labelJa: '強くそう思う', color: 'bg-md3-primary text-black' },
-    { value: 4, labelKo: '그렇다', labelJa: 'そう思う', color: 'bg-md3-primary/70 text-black' },
-    { value: 3, labelKo: '보통이다', labelJa: 'どちらとも言えない', color: 'bg-white/10 text-white hover:bg-white/20' },
-    { value: 2, labelKo: '아니다', labelJa: 'そう思わない', color: 'bg-red-500/50 text-white' },
-    { value: 1, labelKo: '매우 아니다', labelJa: '強くそう思わない', color: 'bg-red-500 text-white' },
+    { value: 5, labelKo: '매우 그렇다', labelJa: '強くそう思う', color: 'bg-[#D4AF37] text-[#0D0B18] hover:bg-[#C29E30]' },
+    { value: 4, labelKo: '그렇다', labelJa: 'そう思う', color: 'bg-[#D4AF37]/80 text-[#0D0B18] hover:bg-[#D4AF37]' },
+    { value: 3, labelKo: '보통이다', labelJa: 'どちらとも言えない', color: 'bg-white/5 border border-white/10 text-white hover:bg-white/10' },
+    { value: 2, labelKo: '아니다', labelJa: 'そう思わない', color: 'bg-red-950/20 border border-red-900/30 text-red-200 hover:bg-red-950/40' },
+    { value: 1, labelKo: '매우 아니다', labelJa: '強くそう思わない', color: 'bg-red-950/40 border border-red-900/50 text-red-100 hover:bg-red-950/60' },
   ];
 
   // 답변 제출 및 다음 질문 이동
@@ -204,7 +204,7 @@ export default function MarriageTest({ lang, userId, onComplete, onOpenAuthModal
           '한국과 일본 양국을 넘나들며 유연하게 거주지를 이동할 수 있고, 진취적인 커리어 라이프를 추구합니다. 열린 가치관을 가진 매력적인 개방파입니다.',
           '韓国と日本の両国を行き来しながら柔軟に移住でき、進取的なキャリアライフを追求します。オープンな価値観を持つ魅力的な開放派です。'
         ),
-        color: 'border-cyan-400 bg-cyan-950/20 text-cyan-200'
+        color: 'border-[#D4AF37] bg-[#D4AF37]/5 text-amber-100'
       };
     }
     if (type.includes('Partner')) {
@@ -214,7 +214,7 @@ export default function MarriageTest({ lang, userId, onComplete, onOpenAuthModal
           '가족의 화목함과 안정된 육아 환경을 최우선으로 생각합니다. 상대를 존중하고 가정을 따뜻하게 가꾸어 나갈 성실하고 헌신적인 성향입니다.',
           '家族の和睦と安定した育児環境を最優先に考えます。相手を尊重し、家庭を温かく築き上げる誠実で献身的なタイプです。'
         ),
-        color: 'border-rose-400 bg-rose-950/20 text-rose-200'
+        color: 'border-[#D4AF37] bg-[#D4AF37]/5 text-amber-100'
       };
     }
     if (type.includes('Settler')) {
@@ -224,7 +224,7 @@ export default function MarriageTest({ lang, userId, onComplete, onOpenAuthModal
           '안정적인 주거 환경과 명확한 미래 계획 하에 결혼 생활을 시작하고 싶어 합니다. 1년 이내의 진지한 정착형 만남에 최적화되어 있습니다.',
           '安定した住居環境と明確な未来計画のもと、結婚生活を始めたいと考えています。1年以内の真剣な定着型の出会いに最適化されています。'
         ),
-        color: 'border-emerald-400 bg-emerald-950/20 text-emerald-200'
+        color: 'border-[#D4AF37] bg-[#D4AF37]/5 text-amber-100'
       };
     }
     return {
@@ -233,20 +233,20 @@ export default function MarriageTest({ lang, userId, onComplete, onOpenAuthModal
         '자녀 계획, 맞벌이 비율 등에서 배우자와의 이성적이고 평등한 합의를 핵심으로 삼습니다. 높은 공감과 커뮤니케이션 능력을 보유하고 있습니다.',
         '家族計画や共働きの割合など、配偶者との理性的かつ平等な合意を核心としています。高い共感能力とコミュニケーション能力を備えています。'
       ),
-      color: 'border-amber-400 bg-amber-950/20 text-amber-200'
+      color: 'border-[#D4AF37] bg-[#D4AF37]/5 text-amber-100'
     };
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto rounded-2xl bg-md3-surface border border-white/10 p-6 shadow-2xl relative overflow-hidden">
+    <div className="w-full max-w-2xl mx-auto rounded-2xl bg-[#141221] border border-[#D4AF37]/20 p-6 shadow-2xl relative overflow-hidden">
       {/* 백그라운드 디자인 패턴 */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-md3-primary/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/5 rounded-full blur-3xl pointer-events-none" />
       
       {/* 시작 화면 */}
       {currentIdx === -1 && (
         <div className="text-center py-8">
-          <div className="w-16 h-16 rounded-full bg-md3-primary/10 flex items-center justify-center mx-auto mb-6 border border-md3-primary/20">
-            <Sparkles className="text-md3-primary animate-pulse" size={28} />
+          <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-6 border border-[#D4AF37]/20">
+            <Sparkles className="text-[#D4AF37] animate-pulse" size={28} />
           </div>
           <h2 className="text-xl font-bold mb-3 tracking-tight">
             {t('💍 1분 결혼 가치관 검사 (Marriage-MBTI)', '💍 1分間結婚価値観テスト (Marriage-MBTI)')}
@@ -259,7 +259,7 @@ export default function MarriageTest({ lang, userId, onComplete, onOpenAuthModal
           </p>
           <button
             onClick={() => setCurrentIdx(0)}
-            className="px-8 py-3 rounded-lg bg-md3-primary text-black font-semibold hover:bg-md3-primary/80 transition-colors flex items-center gap-2 mx-auto text-sm"
+            className="px-8 py-3 rounded-lg bg-[#D4AF37] hover:bg-[#C29E30] text-[#0D0B18] font-semibold transition-colors flex items-center gap-2 mx-auto text-sm"
           >
             {t('진단 시작하기 🚀', '診断を始める 🚀')}
           </button>
@@ -272,11 +272,11 @@ export default function MarriageTest({ lang, userId, onComplete, onOpenAuthModal
           {/* 상단 프로그레스 바 */}
           <div className="flex justify-between items-center mb-6 text-xs text-white/40">
             <span>{t('가치관 진단 진행도', '価値観診断の進行度')}</span>
-            <span className="font-semibold text-md3-primary">{currentIdx + 1} / {QUESTIONS.length}</span>
+            <span className="font-semibold text-[#D4AF37]">{currentIdx + 1} / {QUESTIONS.length}</span>
           </div>
           <div className="w-full h-1 bg-white/5 rounded-full mb-8 overflow-hidden">
             <motion.div 
-              className="h-full bg-md3-primary"
+              className="h-full bg-[#D4AF37]"
               initial={{ width: 0 }}
               animate={{ width: `${((currentIdx + 1) / QUESTIONS.length) * 100}%` }}
               transition={{ duration: 0.3 }}
@@ -351,10 +351,10 @@ export default function MarriageTest({ lang, userId, onComplete, onOpenAuthModal
           <button
             onClick={handleSaveResult}
             disabled={isSubmitting}
-            className="w-full py-3.5 rounded-lg bg-gradient-to-r from-md3-primary to-emerald-400 hover:from-md3-primary/90 hover:to-emerald-400/90 text-black font-bold text-xs tracking-wide transition-all shadow-lg flex items-center justify-center gap-2"
+            className="w-full py-3.5 rounded-lg bg-[#D4AF37] hover:bg-[#C29E30] text-[#0D0B18] font-bold text-xs tracking-wide transition-all shadow-lg flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
-              <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-[#0D0B18] border-t-transparent rounded-full animate-spin" />
             ) : (
               <Heart size={14} className="fill-current" />
             )}

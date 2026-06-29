@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Shield, Lock, Unlock, Heart, Users, RefreshCw, Send, 
-  AlertTriangle, Eye, Compass, X, Calendar, Video, UserCheck, 
-  Volume2, VideoOff, MicOff, Clock 
+  Shield, Lock, Unlock, Users, RefreshCw, Send, 
+  AlertTriangle, X, Calendar, Video, UserCheck, 
+  Volume2, VideoOff, MicOff, Clock, Sparkles
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { GeminiLiveSession } from '../../lib/geminiLive';
@@ -181,6 +181,7 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
 
   // Marriage-MBTI 가치관 결과 상태
   const [myValues, setMyValues] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<'mbti' | 'partner'>('mbti');
 
   const t = (key: keyof typeof TRANSLATIONS.ko) => {
     return TRANSLATIONS[lang][key] || TRANSLATIONS.ko[key];
@@ -380,279 +381,362 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
         </div>
       </div>
 
-      {/* 실시간 매칭 상태 창 */}
-      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+       {/* 실시간 매칭 상태 창 (50:50 대칭 레이아웃) */}
+      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch mb-8 min-h-[580px]">
         
-        {/* 왼쪽 영역: 매칭 검색기 & 상대방 매칭 정보 카드 */}
-        <div className="lg:col-span-7 flex flex-col gap-6">
-          
-          {/* 매칭 컨트롤러 */}
-          <div className="p-6 rounded-2xl bg-md3-surface border border-white/10 flex flex-col items-center text-center">
-            <Compass className={`text-md3-accent mb-4 ${isSearching ? 'animate-spin' : ''}`} size={44} />
-            <h2 className="text-lg font-medium mb-2">{isSearching ? t('searching') : t('matchingTitle')}</h2>
-            <p className="text-xs text-white/50 mb-6 max-w-md">{t('matchingQueueDesc')}</p>
-            
-            <button
-              onClick={startSearch}
-              disabled={isSearching}
-              className="px-8 py-3 rounded-lg bg-md3-primary text-black font-semibold hover:bg-md3-primary/80 transition-colors flex items-center gap-2"
-            >
-              <RefreshCw size={16} className={isSearching ? 'animate-spin' : ''} />
-              {t('startMatchingBtn')}
-            </button>
-          </div>
-
-          {/* 추천 매칭된 회원 목록 */}
-          {matchFound && (
-            <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-none w-full max-w-full">
-              {MOCK_MATES.map((mate, idx) => (
-                <button
-                  key={mate.id}
-                  onClick={() => setActiveMateIndex(idx)}
-                  className={`flex items-center gap-3 p-3 rounded-xl border shrink-0 text-left cursor-pointer transition-all ${
-                    activeMateIndex === idx
-                      ? 'bg-md3-primary/10 border-md3-primary/50 ring-1 ring-md3-primary/30'
-                      : 'bg-md3-surface border-white/10 hover:bg-white/5'
-                  }`}
-                >
-                  <img
-                    src={mate.avatar}
-                    alt={mate.name}
-                    className="w-10 h-10 rounded-full object-cover border border-white/15"
-                  />
-                  <div>
-                    <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                      {mate.name.split(' ')[0]}
-                      <span className="text-[10px] text-white/50">{mate.age}세</span>
-                    </h4>
-                    <span className="text-[9px] text-md3-accent font-semibold">{mate.matchRate}% Match</span>
-                  </div>
-                </button>
-              ))}
+        {/* 왼쪽 영역: 가치관 진단(MarriageTest) 또는 대시보드 카드 */}
+        <div className="lg:col-span-7 flex flex-col">
+          {!myValues ? (
+            <div className="h-full flex flex-col justify-center">
+              <MarriageTest 
+                lang={lang} 
+                userId={_user?.userId || null} 
+                onComplete={(values) => {
+                  setMyValues(values);
+                  setActiveTab('mbti');
+                  // 테스트 완료 시 즉시 추천 목록 로드 시뮬레이션
+                  setTimeout(() => {
+                    startSearch();
+                  }, 600);
+                }}
+              />
             </div>
-          )}
-
-          {/* 상대방 매칭 카드 */}
-          {matchFound && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-6 rounded-2xl bg-md3-surface border border-white/20 flex flex-col gap-6 relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 bg-md3-accent text-black font-bold px-4 py-1.5 rounded-bl-xl text-sm flex items-center gap-1">
-                <Heart size={14} className="fill-current" />
-                {MOCK_MATES[activeMateIndex].matchRate}%
-              </div>
-
-              {/* 기본 프로필 */}
-              <div className="flex gap-4 items-center">
-                <img 
-                  src={MOCK_MATES[activeMateIndex].avatar} 
-                  alt={MOCK_MATES[activeMateIndex].name} 
-                  className="w-16 h-16 rounded-full object-cover border-2 border-md3-primary"
-                />
-                <div>
-                  <h3 className="text-lg font-bold flex items-center gap-2">
-                    {MOCK_MATES[activeMateIndex].name}
-                    <span className="text-sm font-normal text-white/60">{MOCK_MATES[activeMateIndex].age}세</span>
-                  </h3>
-                  <p className="text-xs text-white/40">{MOCK_MATES[activeMateIndex].location}</p>
-                </div>
-              </div>
-
-              {/* AI 조언 */}
-              <div className="p-4 rounded-xl bg-md3-background border border-white/5">
-                <h4 className="text-xs font-semibold text-md3-accent uppercase tracking-wider mb-1">{t('aiAdvice')}</h4>
-                <p className="text-xs text-white/70 leading-relaxed">
-                  {lang === 'ko' ? MOCK_MATES[activeMateIndex].aiAdvice : MOCK_MATES[activeMateIndex].aiAdviceJa}
-                </p>
-              </div>
-
-              {/* 4분면 SVG 레이더 호합도 차트 */}
-              <div className="p-4 rounded-xl bg-md3-background border border-white/5 flex flex-col items-center">
-                <h4 className="text-xs font-semibold text-white/60 mb-4">{t('radarTitle')}</h4>
-                <div className="relative w-48 h-48 border border-white/10 rounded-full flex items-center justify-center">
-                  {/* 축 표시 */}
-                  <div className="absolute w-full h-[1px] bg-white/10" />
-                  <div className="absolute h-full w-[1px] bg-white/10" />
-                  
-                  {/* 라벨 */}
-                  <span className="absolute -top-5 text-[9px] text-white/40">가치관</span>
-                  <span className="absolute -bottom-5 text-[9px] text-white/40">미래설계</span>
-                  <span className="absolute -left-10 text-[9px] text-white/40">의사소통</span>
-                  <span className="absolute -right-12 text-[9px] text-white/40">문화호환</span>
-
-                  {/* 레이더 도형 그리기 */}
-                  <svg className="absolute w-full h-full pointer-events-none" viewBox="0 0 200 200">
-                    <polygon
-                      points={`
-                        100,${100 - MOCK_MATES[activeMateIndex].radar.x1 * 0.8} 
-                        ${100 + MOCK_MATES[activeMateIndex].radar.y2 * 0.8},100 
-                        100,${100 + MOCK_MATES[activeMateIndex].radar.y1 * 0.8} 
-                        ${100 - MOCK_MATES[activeMateIndex].radar.x2 * 0.8},100
-                      `}
-                      fill="rgba(255, 138, 128, 0.25)"
-                      stroke="#FF8A80"
-                      strokeWidth="2"
-                    />
-                  </svg>
-                </div>
-              </div>
-
-              {/* 신뢰 배지 세션 */}
+          ) : (
+            <div className="p-6 rounded-2xl bg-[#141221] border border-[#D4AF37]/20 flex flex-col justify-between h-full min-h-[520px]">
+              
+              {/* 상단 탭 헤더 */}
               <div>
-                <h4 className="text-xs font-semibold text-white/60 mb-3">{t('badgeTitle')}</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {MOCK_MATES[activeMateIndex].badges.map(badge => {
-                    const isUnlocked = badgesUnlocked[badge.id];
-                    return (
-                      <div 
-                        key={badge.id} 
-                        className={`p-3 rounded-lg border flex flex-col justify-between h-20 transition-all ${
-                          isUnlocked 
-                            ? 'bg-md3-primary/10 border-md3-primary' 
-                            : 'bg-md3-surface border-white/10'
-                        }`}
-                      >
-                        <div className="flex justify-between items-start">
-                          <span className="text-[11px] font-medium text-white/80">{badge.label}</span>
-                          {isUnlocked ? (
-                            <Unlock size={12} className="text-md3-primary" />
-                          ) : (
-                            <Lock size={12} className="text-white/40" />
-                          )}
-                        </div>
-                        
-                        {isUnlocked ? (
-                          <div className="flex items-center gap-1 mt-2 text-[10px] text-md3-primary">
-                            <span className="w-1.5 h-1.5 rounded-full bg-md3-primary animate-ping" />
-                            {t('verified')} ({badge.expired})
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              setSelectedBadge(badge);
-                              setRequestModalOpen(true);
-                            }}
-                            className="w-full py-1 mt-2 rounded bg-white/5 border border-white/10 text-[9px] hover:bg-white/10 transition-colors flex items-center justify-center gap-1"
-                          >
-                            <Eye size={10} />
-                            {t('badgeRequest')}
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
+                <div className="flex border-b border-white/10 mb-5 pb-px">
+                  <button
+                    onClick={() => setActiveTab('mbti')}
+                    className={`flex-1 pb-2.5 text-xs font-semibold border-b-2 transition-all ${
+                      activeTab === 'mbti'
+                        ? 'border-[#D4AF37] text-[#D4AF37]'
+                        : 'border-transparent text-white/50 hover:text-white/80'
+                    }`}
+                  >
+                    {lang === 'ko' ? '나의 가치관 MBTI' : '私の価値観MBTI'}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('partner')}
+                    className={`flex-1 pb-2.5 text-xs font-semibold border-b-2 transition-all ${
+                      activeTab === 'partner'
+                        ? 'border-[#D4AF37] text-[#D4AF37]'
+                        : 'border-transparent text-white/50 hover:text-white/80'
+                    }`}
+                  >
+                    {lang === 'ko' ? '매칭 상대 분석' : 'マッチング相手分析'}
+                  </button>
                 </div>
-              </div>
 
-            </motion.div>
-          )}
+                {/* 탭 1: 나의 가치관 보고서 */}
+                {activeTab === 'mbti' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex flex-col gap-4"
+                  >
+                    <div className="p-4 rounded-xl bg-white/5 border border-[#D4AF37]/20">
+                      <h4 className="text-sm font-bold text-[#D4AF37] mb-1.5 flex items-center gap-1.5">
+                        <Sparkles size={14} />
+                        {myValues.mbtiType}
+                      </h4>
+                      <p className="text-xs text-white/70 leading-relaxed">
+                        {lang === 'ko'
+                          ? '가치관 진단 결과, 회원님은 배우자와의 미래 설계 및 균형 있는 가사 분담을 중요시하는 성향입니다. 한일 커플 매칭 시 갈등 해결 능력이 높게 나타납니다.'
+                          : '価値観診断の結果、会員様は配偶者との将来設計およびバランスの取れた家事分担を重視する傾向があります。日韓カップルマッチング時、葛藤解決能力が高く表れます。'}
+                      </p>
+                    </div>
 
-        </div>
-
-        {/* 오른쪽 영역: 실시간 보안 안심 대화 터널 (채팅창) */}
-        <div className="lg:col-span-5 flex flex-col">
-          <div className="h-full min-h-[490px] rounded-2xl bg-md3-surface border border-white/10 flex flex-col overflow-hidden relative">
-            
-            {/* 채팅 헤더 */}
-            <div className="px-6 py-4 border-b border-white/10 bg-md3-background flex justify-between items-center z-10">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-                <span className="text-xs font-semibold tracking-wider text-white/60">SECURE TUNNEL</span>
-              </div>
-              <div className="flex gap-2 items-center">
-                {matchFound && (
-                  <>
-                    {isBooked ? (
+                    <div className="flex justify-between items-center px-2 text-[11px] text-white/40">
+                      <span>Tested: {new Date(myValues.testedAt || Date.now()).toLocaleDateString()}</span>
                       <button
-                        onClick={() => setShowMeetingScreen(true)}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-black text-[11px] font-bold flex items-center gap-1.5 transition-colors"
+                        onClick={() => {
+                          setMyValues(null);
+                          setMatchFound(false);
+                        }}
+                        className="text-[#D4AF37] hover:underline flex items-center gap-1"
                       >
-                        <Video size={12} />
-                        {t('enterVideoMeeting')}
+                        {lang === 'ko' ? '다시 검사하기 🔄' : '再診断する 🔄'}
                       </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* 탭 2: 매칭 상대 분석 */}
+                {activeTab === 'partner' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex flex-col gap-4 overflow-y-auto max-h-[350px] pr-1 scrollbar-thin"
+                  >
+                    {!matchFound ? (
+                      <div className="text-center py-12 text-xs text-white/30">
+                        {lang === 'ko'
+                          ? '대기열에 합류하여 가치관 점수가 가장 높은 매칭 상대를 추천받아 보세요.'
+                          : '待機列に参加して、価値観スコアが最も高いマッチング相手をおすすめしてもらいましょう。'}
+                      </div>
                     ) : (
-                      <button
-                        onClick={() => setShowBookingModal(true)}
-                        className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[11px] font-medium flex items-center gap-1.5 transition-all border border-white/10"
-                      >
-                        <Calendar size={12} className="text-md3-primary" />
-                        {t('videoCallReservation')}
-                      </button>
+                      <div className="flex flex-col gap-5">
+                        {/* 추천 메이트 횡스크롤 칩 */}
+                        <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none">
+                          {MOCK_MATES.map((mate, idx) => (
+                            <button
+                              key={mate.id}
+                              onClick={() => setActiveMateIndex(idx)}
+                              className={`flex items-center gap-2 p-2 rounded-lg border shrink-0 text-left cursor-pointer transition-all ${
+                                activeMateIndex === idx
+                                  ? 'bg-[#D4AF37]/10 border-[#D4AF37]'
+                                  : 'bg-white/5 border-white/10 hover:bg-white/10'
+                              }`}
+                            >
+                              <img
+                                src={mate.avatar}
+                                alt={mate.name}
+                                className="w-8 h-8 rounded-full object-cover"
+                              />
+                              <div>
+                                <h4 className="text-[11px] font-bold text-white flex items-center gap-1">
+                                  {mate.name.split(' ')[0]}
+                                  <span className="text-[9px] text-white/50">{mate.age}세</span>
+                                </h4>
+                                <span className="text-[8px] text-[#D4AF37] font-semibold">{mate.matchRate}% Match</span>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* 상세 분석 영역 */}
+                        <div className="flex flex-col gap-4 border-t border-white/5 pt-4">
+                          <div className="flex gap-3 items-center">
+                            <img 
+                              src={MOCK_MATES[activeMateIndex].avatar} 
+                              alt={MOCK_MATES[activeMateIndex].name} 
+                              className="w-12 h-12 rounded-full object-cover border border-[#D4AF37]"
+                            />
+                            <div>
+                              <h3 className="text-sm font-bold flex items-center gap-1.5">
+                                {MOCK_MATES[activeMateIndex].name}
+                                <span className="text-xs font-normal text-white/50">{MOCK_MATES[activeMateIndex].age}세</span>
+                              </h3>
+                              <p className="text-[10px] text-white/40">{MOCK_MATES[activeMateIndex].location}</p>
+                            </div>
+                          </div>
+
+                          <div className="p-3.5 rounded-lg bg-white/5 border border-white/5 text-[11px] leading-relaxed text-white/80">
+                            <span className="block text-[9px] font-bold text-[#D4AF37] uppercase tracking-wider mb-0.5">{t('aiAdvice')}</span>
+                            {lang === 'ko' ? MOCK_MATES[activeMateIndex].aiAdvice : MOCK_MATES[activeMateIndex].aiAdviceJa}
+                          </div>
+
+                          {/* 4분면 SVG 레이더 호합도 차트 */}
+                          <div className="flex flex-col items-center py-2 bg-white/5 border border-white/5 rounded-lg">
+                            <h5 className="text-[10px] font-semibold text-white/40 mb-3">{t('radarTitle')}</h5>
+                            <div className="relative w-36 h-36 border border-white/10 rounded-full flex items-center justify-center scale-95">
+                              <div className="absolute w-full h-[1px] bg-white/10" />
+                              <div className="absolute h-full w-[1px] bg-white/10" />
+                              <span className="absolute -top-4 text-[8px] text-white/40">가치관</span>
+                              <span className="absolute -bottom-4 text-[8px] text-white/40">미래설계</span>
+                              <span className="absolute -left-9 text-[8px] text-white/40">의사소통</span>
+                              <span className="absolute -right-10 text-[8px] text-white/40">문화호환</span>
+                              <svg className="absolute w-full h-full pointer-events-none" viewBox="0 0 200 200">
+                                <polygon
+                                  points={`
+                                    100,${100 - MOCK_MATES[activeMateIndex].radar.x1 * 0.8} 
+                                    ${100 + MOCK_MATES[activeMateIndex].radar.y2 * 0.8},100 
+                                    100,${100 + MOCK_MATES[activeMateIndex].radar.y1 * 0.8} 
+                                    ${100 - MOCK_MATES[activeMateIndex].radar.x2 * 0.8},100
+                                  `}
+                                  fill="rgba(212, 175, 55, 0.25)"
+                                  stroke="#D4AF37"
+                                  strokeWidth="2"
+                                />
+                              </svg>
+                            </div>
+                          </div>
+
+                          {/* 신뢰 배지 교환 */}
+                          <div>
+                            <h5 className="text-[10px] font-semibold text-white/40 mb-2">{t('badgeTitle')}</h5>
+                            <div className="grid grid-cols-3 gap-2">
+                              {MOCK_MATES[activeMateIndex].badges.map(badge => {
+                                const isUnlocked = badgesUnlocked[badge.id];
+                                return (
+                                  <div 
+                                    key={badge.id} 
+                                    className={`p-2 rounded-lg border flex flex-col justify-between h-[68px] transition-all ${
+                                      isUnlocked 
+                                        ? 'bg-[#D4AF37]/5 border-[#D4AF37]' 
+                                        : 'bg-white/5 border-white/10'
+                                    }`}
+                                  >
+                                    <div className="flex justify-between items-start">
+                                      <span className="text-[9px] font-medium text-white/80 leading-tight">{badge.label.split(' ')[0]}</span>
+                                      {isUnlocked ? (
+                                        <Unlock size={10} className="text-[#D4AF37]" />
+                                      ) : (
+                                        <Lock size={10} className="text-white/40" />
+                                      )}
+                                    </div>
+                                    {isUnlocked ? (
+                                      <span className="text-[8px] text-[#D4AF37] font-medium">{t('verified')}</span>
+                                    ) : (
+                                      <button
+                                        onClick={() => {
+                                          setSelectedBadge(badge);
+                                          setRequestModalOpen(true);
+                                        }}
+                                        className="w-full py-0.5 mt-1 rounded bg-white/5 border border-white/10 text-[8px] hover:bg-white/10 text-white"
+                                      >
+                                        {t('badgeRequest').substring(0, 4)}..
+                                      </button>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     )}
-                  </>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* 매칭 컨트롤러 하단 고정 */}
+              <div className="mt-5 pt-4 border-t border-white/5 flex flex-col items-center">
+                {isSearching ? (
+                  <div className="flex items-center gap-2 text-xs text-[#D4AF37]">
+                    <RefreshCw size={14} className="animate-spin" />
+                    <span>{t('searching')}</span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={startSearch}
+                    disabled={isSearching}
+                    className="w-full py-3 rounded-lg bg-[#D4AF37] hover:bg-[#C29E30] text-[#0D0B18] font-bold text-xs transition-colors flex items-center justify-center gap-2"
+                  >
+                    <RefreshCw size={14} />
+                    {t('startMatchingBtn')}
+                  </button>
                 )}
               </div>
             </div>
+          )}
+        </div>
 
-            {/* 채팅 내용 영역 */}
-            <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-4 max-h-[390px]">
-              {messages.length === 0 ? (
-                <div className="text-center text-xs text-white/30 my-auto">
-                  {lang === 'ko' ? '매칭 대기열에 합류하여 대화를 나누어보세요.' : 'マッチング待機列に参加して会話を始めてみましょう。'}
+        {/* 오른쪽 영역: 실시간 보안 안심 대화 터널 (채팅창) */}
+        <div className="lg:col-span-5 flex flex-col h-full">
+          {!myValues ? (
+            <div className="h-full min-h-[520px] rounded-2xl bg-[#141221] border border-white/5 flex flex-col items-center justify-center p-6 text-center text-white/30">
+              <Lock size={32} className="text-[#D4AF37]/50 mb-3 animate-pulse" />
+              <p className="text-xs leading-relaxed max-w-[200px]">
+                {lang === 'ko'
+                  ? '🔒 가치관 성향 검사를 완료하시면 보안 안심 대화 터널(채팅방)이 개설됩니다.'
+                  : '🔒 価値観診断を完了すると、セキュリティ安全会話トンネルが開設されます。'}
+              </p>
+            </div>
+          ) : (
+            <div className="h-full min-h-[520px] rounded-2xl bg-[#141221] border border-white/10 flex flex-col overflow-hidden relative">
+              
+              {/* 채팅 헤더 */}
+              <div className="px-5 py-3 border-b border-white/10 bg-[#0D0B18] flex justify-between items-center z-10">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                  <span className="text-[10px] font-bold tracking-wider text-white/60">SECURE TUNNEL</span>
                 </div>
-              ) : (
-                messages.map((msg, index) => (
-                  <div 
-                    key={index}
-                    className={`flex flex-col ${
-                      msg.sender === 'user' 
-                        ? 'items-end' 
-                        : msg.sender === 'system' 
-                        ? 'items-center' 
-                        : 'items-start'
-                    }`}
-                  >
-                    {msg.sender === 'system' ? (
-                      <div className="px-3 py-1 rounded bg-white/5 border border-white/10 text-[9px] text-white/50 text-center">
-                        {msg.text}
-                      </div>
-                    ) : (
-                      <div 
-                        className={`max-w-[80%] p-3 rounded-2xl text-xs leading-relaxed ${
-                          msg.sender === 'user'
-                            ? 'bg-md3-primary text-black font-medium rounded-tr-none'
-                            : 'bg-md3-background text-white rounded-tl-none border border-white/10'
-                        }`}
-                      >
-                        {msg.text}
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* AI 스캠 경고 배너 */}
-            {scamAlert && (
-              <div className="bg-red-500/10 border-y border-red-500/20 px-4 py-2 flex items-center gap-2">
-                <AlertTriangle className="text-red-500 shrink-0" size={16} />
-                <span className="text-[10px] text-red-400 font-medium">{t('scamWarning')}</span>
+                <div className="flex gap-1.5 items-center">
+                  {matchFound && (
+                    <>
+                      {isBooked ? (
+                        <button
+                          onClick={() => setShowMeetingScreen(true)}
+                          className="px-2.5 py-1 rounded bg-emerald-500 hover:bg-emerald-600 text-black text-[10px] font-bold flex items-center gap-1 transition-colors"
+                        >
+                          <Video size={10} />
+                          {t('enterVideoMeeting')}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setShowBookingModal(true)}
+                          className="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-white text-[10px] font-medium flex items-center gap-1 transition-all border border-white/10"
+                        >
+                          <Calendar size={10} className="text-[#D4AF37]" />
+                          {t('videoCallReservation')}
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
-            )}
 
-            {/* 채팅 입력 */}
-            <div className="p-4 bg-md3-background border-t border-white/10 flex gap-2">
-              <input
-                type="text"
-                value={inputVal}
-                onChange={e => setInputVal(e.target.value)}
-                placeholder={t('chatPlaceholder')}
-                disabled={!matchFound}
-                onKeyDown={e => e.key === 'Enter' && sendMessage()}
-                className="flex-1 bg-md3-surface border border-white/10 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-md3-primary disabled:opacity-50 text-white"
-              />
-              <button
-                onClick={sendMessage}
-                disabled={!matchFound}
-                className="p-2.5 rounded-lg bg-md3-primary text-black disabled:opacity-50 hover:bg-md3-primary/80 transition-colors"
-              >
-                <Send size={14} />
-              </button>
+              {/* 채팅 내용 영역 */}
+              <div className="flex-1 p-5 overflow-y-auto flex flex-col gap-3 max-h-[360px] scrollbar-thin">
+                {messages.length === 0 ? (
+                  <div className="text-center text-[11px] text-white/20 my-auto">
+                    {lang === 'ko' ? '매칭 대기열에 합류하여 대화를 나누어보세요.' : 'マッチング待機列に参加して会話を始めてみましょう。'}
+                  </div>
+                ) : (
+                  messages.map((msg, index) => (
+                    <div 
+                      key={index}
+                      className={`flex flex-col ${
+                        msg.sender === 'user' 
+                          ? 'items-end' 
+                          : msg.sender === 'system' 
+                          ? 'items-center' 
+                          : 'items-start'
+                      }`}
+                    >
+                      {msg.sender === 'system' ? (
+                        <div className="px-2.5 py-0.5 rounded bg-white/5 border border-white/5 text-[8px] text-white/40 text-center">
+                          {msg.text}
+                        </div>
+                      ) : (
+                        <div 
+                          className={`max-w-[85%] p-2.5 rounded-xl text-[11px] leading-relaxed ${
+                            msg.sender === 'user'
+                              ? 'bg-[#D4AF37] text-[#0D0B18] font-medium rounded-tr-none'
+                              : 'bg-white/5 text-white rounded-tl-none border border-white/5'
+                          }`}
+                        >
+                          {msg.text}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* AI 스캠 경고 배너 */}
+              {scamAlert && (
+                <div className="bg-red-500/5 border-y border-red-500/10 px-4 py-1.5 flex items-center gap-2">
+                  <AlertTriangle className="text-red-500 shrink-0" size={12} />
+                  <span className="text-[9px] text-red-400 font-medium">{t('scamWarning')}</span>
+                </div>
+              )}
+
+              {/* 채팅 입력 */}
+              <div className="p-3 bg-[#0D0B18] border-t border-white/10 flex gap-2">
+                <input
+                  type="text"
+                  value={inputVal}
+                  onChange={e => setInputVal(e.target.value)}
+                  placeholder={t('chatPlaceholder')}
+                  disabled={!matchFound}
+                  onKeyDown={e => e.key === 'Enter' && sendMessage()}
+                  className="flex-1 bg-[#141221] border border-white/10 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-[#D4AF37] disabled:opacity-50 text-white"
+                />
+                <button
+                  onClick={sendMessage}
+                  disabled={!matchFound}
+                  className="p-2 rounded-lg bg-[#D4AF37] text-[#0D0B18] disabled:opacity-50 hover:bg-[#C29E30] transition-colors"
+                >
+                  <Send size={12} />
+                </button>
+              </div>
+
             </div>
-
-          </div>
+          )}
         </div>
 
       </div>
