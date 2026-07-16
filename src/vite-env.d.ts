@@ -8,7 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_FIREBASE_MESSAGING_SENDER_ID: string;
   readonly VITE_FIREBASE_APP_ID: string;
   readonly VITE_PAYPAL_CLIENT_ID: string;
-  readonly VITE_TOSS_CLIENT_KEY: string;
+  readonly VITE_STRIPE_PUBLISHABLE_KEY: string;
 }
 
 interface ImportMeta {

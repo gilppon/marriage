@@ -3,9 +3,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Heart, Save, ShieldCheck, Coins, X, AlertTriangle } from 'lucide-react';
 import PayPalCheckoutButton from '../components/payment/PayPalCheckoutButton';
-import TossCheckoutButton from '../components/payment/TossCheckoutButton';
+import StripeCheckoutButton from '../components/payment/StripeCheckoutButton';
 import { PRODUCTS } from '../lib/paypal';
-import { TOSS_PRODUCTS } from '../lib/toss';
+import { STRIPE_PRODUCTS } from '../lib/stripe';
 import { createOrder } from '../lib/firestore';
 
 export default function ProfilePage() {
@@ -441,9 +441,10 @@ export default function ProfilePage() {
                     onSuccess={() => handlePaymentSuccess(PRODUCTS[0].id, PRODUCTS[0].price, false)}
                     onError={(err) => console.error('PayPal error:', err)}
                   />
-                  <TossCheckoutButton
-                    product={TOSS_PRODUCTS[0]}
-                    onError={(err) => console.error('Toss error:', err)}
+                  <StripeCheckoutButton
+                    product={STRIPE_PRODUCTS[0]}
+                    onSuccess={() => handlePaymentSuccess(STRIPE_PRODUCTS[0].id, STRIPE_PRODUCTS[0].price.toString(), false)}
+                    onError={(err) => console.error('Stripe error:', err)}
                   />
                 </div>
               </div>
@@ -468,9 +469,10 @@ export default function ProfilePage() {
                     onSuccess={() => handlePaymentSuccess(PRODUCTS[1].id, PRODUCTS[1].price, true)}
                     onError={(err) => console.error('PayPal error:', err)}
                   />
-                  <TossCheckoutButton
-                    product={TOSS_PRODUCTS[1]}
-                    onError={(err) => console.error('Toss error:', err)}
+                  <StripeCheckoutButton
+                    product={STRIPE_PRODUCTS[1]}
+                    onSuccess={() => handlePaymentSuccess(STRIPE_PRODUCTS[1].id, STRIPE_PRODUCTS[1].price.toString(), true)}
+                    onError={(err) => console.error('Stripe error:', err)}
                   />
                 </div>
               </div>

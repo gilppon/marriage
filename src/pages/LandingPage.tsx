@@ -8,11 +8,11 @@ import {
 } from 'framer-motion';
 import { ScrambleIn } from '../components/ScrambleText';
 import PayPalCheckoutButton from '../components/payment/PayPalCheckoutButton';
-import TossCheckoutButton from '../components/payment/TossCheckoutButton';
+import StripeCheckoutButton from '../components/payment/StripeCheckoutButton';
 import { useAuth } from '../contexts/AuthContext';
 import { createOrder } from '../lib/firestore';
 import { PRODUCTS } from '../lib/paypal';
-import { TOSS_PRODUCTS } from '../lib/toss';
+import { STRIPE_PRODUCTS } from '../lib/stripe';
 import { VIDEO_URLS } from '../config/videos';
 import { SITE_CONFIG } from '../config/content';
 import { ConnectAILabLogo } from '../components/ConnectAILabLogo';
@@ -50,41 +50,30 @@ export default function LandingPage() {
     [user]
   );
 
-  /* ── Hero video mouse-scrub ── */
-  const heroVideoRef = useRef<HTMLVideoElement>(null);
-  const targetTimeRef = useRef(0);
-  const isSeekingRef = useRef(false);
-
-  const handleSeeked = useCallback(() => {
-    const video = heroVideoRef.current;
-    if (!video) return;
-    isSeekingRef.current = false;
-    if (Math.abs(video.currentTime - targetTimeRef.current) > 0.01) {
-      isSeekingRef.current = true;
-      video.currentTime = targetTimeRef.current;
-    }
-  }, []);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const video = heroVideoRef.current;
-      if (!video || !video.duration) return;
-      const deltaX = e.movementX;
-      const sensitivity = 0.8;
-      const change = (deltaX / window.innerWidth) * video.duration * sensitivity;
-      targetTimeRef.current = Math.max(
-        0,
-        Math.min(video.duration, targetTimeRef.current + change)
-      );
-      if (!isSeekingRef.current) {
-        isSeekingRef.current = true;
-        video.currentTime = targetTimeRef.current;
+  /* ── Stripe 결제 완료 → Firestore 저장 ── */
+  const handleStripeSuccess = useCallback(
+    async (details: any, productId: string, productName: string, amount: number) => {
+      const orderId = details.id || `st_${Date.now()}`;
+      try {
+        await createOrder({
+          id: orderId,
+          userId: user?.uid || 'anonymous',
+          productId,
+          productName,
+          amount: amount,
+          currency: 'KRW',
+          status: 'completed',
+          paypalOrderId: orderId,
+        });
+        console.log('[Firestore] Stripe Order saved:', orderId);
+        alert(`✅ Stripe 결제 완료! 주문번호: ${orderId}`);
+      } catch (err) {
+        console.error('[Firestore] Failed to save Stripe order:', err);
+        alert(`결제는 완료되었지만 기록 저장에 실패했습니다. 주문번호: ${orderId}`);
       }
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+    },
+    [user]
+  );
 
   /* ── Entrance delay ── */
   useEffect(() => {
@@ -113,16 +102,15 @@ export default function LandingPage() {
     <div className="relative">
       {/* ════════════════ SECTION 1: HERO ════════════════ */}
       <section className="relative h-screen h-[100dvh] flex flex-col overflow-hidden">
-        {/* Video background (mouse-scrubbed) */}
+        {/* Video background (autoplay) */}
         {VIDEO_URLS.hero && (
           <video
-            ref={heroVideoRef}
             src={VIDEO_URLS.hero}
             className="absolute inset-0 w-full h-full object-cover"
-            playsInline
+            autoPlay
+            loop
             muted
-            preload="auto"
-            onSeeked={handleSeeked}
+            playsInline
           />
         )}
 
@@ -508,9 +496,10 @@ export default function LandingPage() {
                   onSuccess={(details) => handlePayPalSuccess(details, PRODUCTS[0].id, PRODUCTS[0].name, PRODUCTS[0].price)}
                   onError={(err) => console.error('PayPal error:', err)}
                 />
-                <TossCheckoutButton
-                  product={TOSS_PRODUCTS[0]}
-                  onError={(err) => console.error('Toss error:', err)}
+                <StripeCheckoutButton
+                  product={STRIPE_PRODUCTS[0]}
+                  onSuccess={(details) => handleStripeSuccess(details, STRIPE_PRODUCTS[0].id, STRIPE_PRODUCTS[0].name, STRIPE_PRODUCTS[0].price)}
+                  onError={(err) => console.error('Stripe error:', err)}
                 />
               </div>
             </motion.div>
@@ -559,9 +548,10 @@ export default function LandingPage() {
                   onSuccess={(details) => handlePayPalSuccess(details, PRODUCTS[1].id, PRODUCTS[1].name, PRODUCTS[1].price)}
                   onError={(err) => console.error('PayPal error:', err)}
                 />
-                <TossCheckoutButton
-                  product={TOSS_PRODUCTS[1]}
-                  onError={(err) => console.error('Toss error:', err)}
+                <StripeCheckoutButton
+                  product={STRIPE_PRODUCTS[1]}
+                  onSuccess={(details) => handleStripeSuccess(details, STRIPE_PRODUCTS[1].id, STRIPE_PRODUCTS[1].name, STRIPE_PRODUCTS[1].price)}
+                  onError={(err) => console.error('Stripe error:', err)}
                 />
               </div>
             </motion.div>

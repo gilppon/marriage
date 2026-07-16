@@ -7,7 +7,7 @@
 export const SITE_CONFIG = {
   ko: {
     brandName: 'Best-Saiko Marriage Match',
-    copyright: '© 2026 Best-Saiko Match. All rights reserved.',
+    copyright: '© 2026 Next-haru. All rights reserved.',
 
     // 히어로 섹션
     hero: {

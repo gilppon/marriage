@@ -6,4 +6,5 @@
 // ============================================================
 
 export { default as PayPalCheckoutButton } from './PayPalCheckoutButton';
-export { default as TossCheckoutButton } from './TossCheckoutButton';
+export { default as StripeCheckoutButton } from './StripeCheckoutButton';
+
