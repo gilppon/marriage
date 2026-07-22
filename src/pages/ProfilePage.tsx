@@ -22,6 +22,12 @@ export default function ProfilePage() {
   const [religion, setReligion] = useState('NONE');
   const [residenceFlex, setResidenceFlex] = useState('ANY');
 
+  // ✈️ 여행 일정 상태 (Travel Schedule Match)
+  const [travelCity, setTravelCity] = useState('');
+  const [travelStartDate, setTravelStartDate] = useState('');
+  const [travelEndDate, setTravelEndDate] = useState('');
+  const [travelMemo, setTravelMemo] = useState('');
+
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
 
@@ -358,6 +364,73 @@ export default function ProfilePage() {
                   </button>
                 ))}
               </div>
+            </div>
+          </div>
+
+          {/* ✈️ 한일 방한/방일 일정 등록 (Travel Schedule Match) 카드 */}
+          <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col gap-4">
+            <div className="flex items-center gap-2 pb-2 border-b border-white/10">
+              <span className="text-base">✈️</span>
+              <h3 className="text-sm font-bold text-[#D4AF37]">
+                {lang === 'ko' ? '나의 방한/방일 여행 일정 등록 (Travel Match)' : '渡韓・渡日スケジュール登録 (Travel Match)'}
+              </h3>
+            </div>
+            <p className="text-[11px] text-white/50 leading-relaxed">
+              {lang === 'ko'
+                ? '상대 국가(도쿄, 오사카, 서울, 부산 등) 방문 예정 일정을 등록해 두시면, 해당 기간 현지 오프라인 데이트 약속을 원하는 회원과 우선 매칭됩니다.'
+                : '相手国（ソウル、釜山、東京、大阪など）への訪問予定を登録しておくと、現地での対面デートを希望するメンバーと優先マッチングされます。'}
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="text-white/40 text-[10px] uppercase tracking-wider block mb-1.5 font-semibold">
+                  {lang === 'ko' ? '방문 도시 (City)' : '訪問都市 (City)'}
+                </label>
+                <input
+                  type="text"
+                  value={travelCity}
+                  onChange={e => setTravelCity(e.target.value)}
+                  placeholder={country === 'KR' ? '예: Tokyo, Osaka' : '예: Seoul, Busan'}
+                  className="w-full h-10 bg-white/[0.05] border border-white/10 rounded-xl px-3 text-xs text-white outline-none focus:border-[#D4AF37]"
+                />
+              </div>
+              <div>
+                <label className="text-white/40 text-[10px] uppercase tracking-wider block mb-1.5 font-semibold">
+                  {lang === 'ko' ? '시작일 (Start Date)' : '開始日 (Start Date)'}
+                </label>
+                <input
+                  type="date"
+                  value={travelStartDate}
+                  onChange={e => setTravelStartDate(e.target.value)}
+                  className="w-full h-10 bg-white/[0.05] border border-white/10 rounded-xl px-3 text-xs text-white outline-none focus:border-[#D4AF37]"
+                  style={{ colorScheme: 'dark' }}
+                />
+              </div>
+              <div>
+                <label className="text-white/40 text-[10px] uppercase tracking-wider block mb-1.5 font-semibold">
+                  {lang === 'ko' ? '종료일 (End Date)' : '終了日 (End Date)'}
+                </label>
+                <input
+                  type="date"
+                  value={travelEndDate}
+                  onChange={e => setTravelEndDate(e.target.value)}
+                  className="w-full h-10 bg-white/[0.05] border border-white/10 rounded-xl px-3 text-xs text-white outline-none focus:border-[#D4AF37]"
+                  style={{ colorScheme: 'dark' }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-white/40 text-[10px] uppercase tracking-wider block mb-1.5 font-semibold">
+                {lang === 'ko' ? '한 줄 데이트 희망 메모 (Memo)' : 'デート希望メモ (Memo)'}
+              </label>
+              <input
+                type="text"
+                value={travelMemo}
+                onChange={e => setTravelMemo(e.target.value)}
+                placeholder={lang === 'ko' ? '예: 시부야 카페에서 맛있는 파르페 같이 먹어요!' : '例：渋谷のカフェで美味しいパフェを食べましょう！'}
+                className="w-full h-10 bg-white/[0.05] border border-white/10 rounded-xl px-3 text-xs text-white outline-none focus:border-[#D4AF37]"
+              />
             </div>
           </div>
 

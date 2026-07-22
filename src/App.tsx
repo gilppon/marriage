@@ -10,6 +10,8 @@ import ExplorePage from './pages/ExplorePage';
 
 import { LanguageProvider } from './contexts/LanguageContext';
 
+import { Footer } from './components/Footer';
+
 function AppContent() {
   const [entranceComplete, setEntranceComplete] = useState(false);
   const navigate = useNavigate();
@@ -38,20 +40,24 @@ function AppContent() {
     : 'landing';
 
   return (
-    <div>
+    <div className="min-h-screen flex flex-col justify-between">
       <Navbar 
         entranceComplete={entranceComplete} 
         currentView={currentView}
         setCurrentView={handleViewChange}
       />
 
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/explore" element={<ExplorePage />} />
-        <Route path="/matching" element={<div className="pt-20"><MatchingContainer user={user} /></div>} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/verify" element={<VerificationPage />} />
-      </Routes>
+      <div className="flex-1">
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/explore" element={<ExplorePage />} />
+          <Route path="/matching" element={<div className="pt-20"><MatchingContainer user={user} /></div>} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/verify" element={<VerificationPage />} />
+        </Routes>
+      </div>
+
+      <Footer />
     </div>
   );
 }

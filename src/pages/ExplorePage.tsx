@@ -18,6 +18,12 @@ interface Member {
   bio: string;
   bioJa: string;
   badges: string[];
+  travelSchedule?: {
+    destination: 'KR' | 'JP';
+    city: string;
+    dateRange: string;
+  };
+  styleTag?: string;
 }
 
 const EXPLORE_MEMBERS: Member[] = [
@@ -30,7 +36,9 @@ const EXPLORE_MEMBERS: Member[] = [
     avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&q=80&w=200',
     bio: '도쿄에서 웹 디자이너로 일하고 있어요. 가치관이 맞는 따뜻한 인연을 만나 한국으로 이주할 준비가 되어 있습니다.',
     bioJa: '東京でウェブデザイナーとして働いています。価値観の合う温かいパートナーに出会い、韓国へ移住する準備ができています。',
-    badges: ['identity', 'job', 'education']
+    badges: ['identity', 'job', 'education'],
+    travelSchedule: { destination: 'KR', city: 'Seoul', dateRange: '8/15 ~ 8/20' },
+    styleTag: '청순함'
   },
   {
     id: 'yui',
@@ -41,7 +49,9 @@ const EXPLORE_MEMBERS: Member[] = [
     avatar: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&q=80&w=200',
     bio: '요리와 산책을 좋아하는 간호사입니다. 서로 존중하며 평생을 함께할 동반자를 한국에서 찾고 싶어요.',
     bioJa: '料理と散歩が好きな看護師です。お互いを尊重し合い、生涯を共にするパートナーを韓国で探したいです。',
-    badges: ['identity', 'education']
+    badges: ['identity', 'education'],
+    travelSchedule: { destination: 'KR', city: 'Busan', dateRange: '9/01 ~ 9/05' },
+    styleTag: '친근함'
   },
   {
     id: 'minji',
@@ -52,7 +62,9 @@ const EXPLORE_MEMBERS: Member[] = [
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200',
     bio: '밝고 긍정적인 성격의 한국인입니다. 일본 문화와 언어에 관심이 많아 도쿄 등 해외 생활 조율도 적극 찬성합니다.',
     bioJa: '明るくポジティブな性格の韓国人です。日本文化と言語に関心が高く、東京などの海外生活の調整も歓迎します。',
-    badges: ['identity', 'job']
+    badges: ['identity', 'job'],
+    travelSchedule: { destination: 'JP', city: 'Tokyo', dateRange: '8/25 ~ 8/30' },
+    styleTag: '지적임'
   },
   {
     id: 'kenji',
@@ -63,7 +75,9 @@ const EXPLORE_MEMBERS: Member[] = [
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
     bio: 'IT 기업에서 엔지니어로 일하는 켄지입니다. 한국어 공부를 열심히 하고 있어 일상 대화가 가능합니다.',
     bioJa: 'IT企業でエンジニアとして働くケンジです。韓国語の勉強を熱心に行っており、日常会話が可能です。',
-    badges: ['identity', 'job', 'education']
+    badges: ['identity', 'job', 'education'],
+    travelSchedule: { destination: 'KR', city: 'Seoul', dateRange: '9/10 ~ 9/15' },
+    styleTag: 'K-Pop'
   },
   {
     id: 'yuki',
@@ -74,7 +88,8 @@ const EXPLORE_MEMBERS: Member[] = [
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200',
     bio: '후쿠오카에서 카페를 운영 중입니다. 다정다감하고 가치관이 통하는 인연을 기다립니다.',
     bioJa: '福岡でカフェを運営しています。思いやりがあり、価値観の通じ合えるパートナーを待っています。',
-    badges: ['identity']
+    badges: ['identity'],
+    styleTag: '도회적'
   }
 ];
 
@@ -86,6 +101,8 @@ export default function ExplorePage() {
   const [isPremium, setIsPremium] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [filterPremiumOnly, setFilterPremiumOnly] = useState(false);
+  const [selectedStyleTag, setSelectedStyleTag] = useState<string>('ALL');
+  const [travelFilterOnly, setTravelFilterOnly] = useState<boolean>(false);
 
   // 무료/유료 매칭 토글 제어
   const handleToggleFilter = () => {
@@ -102,9 +119,14 @@ export default function ExplorePage() {
     setShowUpgradeModal(false);
   };
 
-  const filteredMembers = filterPremiumOnly 
-    ? EXPLORE_MEMBERS.filter(m => m.tier === 'Basic' || m.tier === 'Pro')
-    : EXPLORE_MEMBERS;
+  const filteredMembers = EXPLORE_MEMBERS.filter(m => {
+    if (filterPremiumOnly && m.tier === 'Free') return false;
+    if (selectedStyleTag !== 'ALL' && m.styleTag !== selectedStyleTag) return false;
+    if (travelFilterOnly && !m.travelSchedule) return false;
+    return true;
+  });
+
+  const styleTags = ['ALL', 'K-Pop', '청순함', '지적임', '친근함', '도회적'];
 
   return (
     <div className="w-full min-h-screen bg-[#0D0B18] text-white pt-24 pb-16 px-4 md:px-8 flex flex-col items-center font-sans">
@@ -201,20 +223,54 @@ export default function ExplorePage() {
 
         {/* 필터 - Explore 탭일 때만 활성화 */}
         {activeTab === 'explore' && (
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-white/50">{lang === 'ko' ? '베이직/프로 유료 회원만 보기' : '有料会員のみ表示'}</span>
-            <button
-              onClick={handleToggleFilter}
-              className={`w-10 h-5 rounded-full p-0.5 transition-colors relative ${
-                filterPremiumOnly ? 'bg-[#D4AF37]' : 'bg-white/20'
-              }`}
-            >
-              <div 
-                className={`w-4 h-4 rounded-full bg-[#0D0B18] shadow-md transition-transform transform ${
-                  filterPremiumOnly ? 'translate-x-5' : 'translate-x-0'
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
+            {/* 이상형 스타일 칩 바 */}
+            <div className="flex gap-1.5 overflow-x-auto max-w-full pb-1 sm:pb-0 scrollbar-none">
+              {styleTags.map(tag => (
+                <button
+                  key={tag}
+                  onClick={() => setSelectedStyleTag(tag)}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap transition-all border ${
+                    selectedStyleTag === tag
+                      ? 'bg-[#D4AF37] text-black border-[#D4AF37]'
+                      : 'bg-white/5 border-white/10 text-white/50 hover:text-white'
+                  }`}
+                >
+                  {tag === 'ALL' ? (lang === 'ko' ? '스타일 전체' : 'スタイル全般') : `#${tag}`}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-4 text-xs shrink-0">
+              {/* 여행 일정 있는 유저만 보기 토글 */}
+              <button
+                onClick={() => setTravelFilterOnly(!travelFilterOnly)}
+                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border flex items-center gap-1 ${
+                  travelFilterOnly
+                    ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
+                    : 'bg-white/5 border-white/10 text-white/40 hover:text-white'
                 }`}
-              />
-            </button>
+              >
+                <span>✈️</span>
+                <span>{lang === 'ko' ? '방한/방일 일정 멤버만' : '渡韓・渡日メンバーのみ'}</span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-white/50">{lang === 'ko' ? '유료 회원만' : '有料のみ'}</span>
+                <button
+                  onClick={handleToggleFilter}
+                  className={`w-9 h-4 rounded-full p-0.5 transition-colors relative ${
+                    filterPremiumOnly ? 'bg-[#D4AF37]' : 'bg-white/20'
+                  }`}
+                >
+                  <div 
+                    className={`w-3 h-3 rounded-full bg-[#0D0B18] shadow-md transition-transform transform ${
+                      filterPremiumOnly ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -249,6 +305,17 @@ export default function ExplorePage() {
                     }`}
                   />
                   
+                  {/* ✈️ 방한/방일 일정 실시간 오버레이 뱃지 */}
+                  {member.travelSchedule && (
+                    <div className="absolute bottom-2 left-2 right-2 bg-[#0D0B18]/85 backdrop-blur-md border border-[#D4AF37]/30 px-2.5 py-1 rounded-xl text-[9px] text-white flex items-center justify-between shadow-lg z-10">
+                      <span className="font-bold text-[#D4AF37] flex items-center gap-1">
+                        <span>✈️</span>
+                        <span>{member.travelSchedule.city}</span>
+                      </span>
+                      <span className="text-white/60 font-semibold">{member.travelSchedule.dateRange}</span>
+                    </div>
+                  )}
+
                   {/* 무료 유저 사진 잠금 오버레이 */}
                   {!isPremium && (
                     <div className="absolute inset-0 bg-[#0D0B18]/45 flex flex-col items-center justify-center text-center p-4">
@@ -272,10 +339,17 @@ export default function ExplorePage() {
                 {/* 하단 텍스트 상세 영역 */}
                 <div className="p-4 flex-1 flex flex-col justify-between">
                   <div>
-                    <h3 className="text-xs sm:text-sm font-bold flex items-center gap-1.5 text-white">
-                      {member.name.split(' ')[0]}
-                      <span className="text-[10px] sm:text-xs font-normal text-white/50">{member.age}세</span>
-                    </h3>
+                    <div className="flex justify-between items-center mb-1">
+                      <h3 className="text-xs sm:text-sm font-bold flex items-center gap-1.5 text-white">
+                        {member.name.split(' ')[0]}
+                        <span className="text-[10px] sm:text-xs font-normal text-white/50">{member.age}세</span>
+                      </h3>
+                      {member.styleTag && (
+                        <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 text-[#D4AF37] font-semibold border border-[#D4AF37]/20">
+                          #{member.styleTag}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[9px] sm:text-[10px] text-white/40 mt-0.5 mb-3">{member.location}</p>
                     
                     <p className="text-[11px] text-white/60 leading-relaxed mb-4 min-h-[50px] line-clamp-3">

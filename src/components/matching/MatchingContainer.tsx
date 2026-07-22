@@ -268,13 +268,16 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
 
       // 2. Agora RTC 및 Gemini Live WebSocket 연동 개설
       const targetLang = lang === 'ko' ? 'ja' : 'ko'; // 내 언어 기준 상대방 번역 타겟 언어 자동 설정
-      
+      const currentRoomId = 'meeting_channel_best_saiko_777';
+      const currentUserId = _user?.uid || 'user_demo_123';
+
       const agora = new AgoraLiveManager({
         appId: 'agora_demo_app_id_123',
-        channel: 'meeting_channel_best_saiko_777'
+        channel: currentRoomId
       });
       const gemini = new GeminiLiveSession({
-        apiKey: 'AIzaSyDemoKey_Gemini35LiveApi_2026',
+        roomId: currentRoomId,
+        userId: currentUserId,
         sourceLang: lang,
         targetLang: targetLang
       });
@@ -292,7 +295,18 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
             setLiveSubtitles(translatedText);
           });
 
-          // C. 아고라 채널 합류 및 내 음성(PCM) 획득
+          // C. AI 가드 경고 수신 및 대처 연결
+          gemini.onAlertReceived((alertType, reason) => {
+            if (alertType === 'TERMINATE_CALL') {
+              setShowMeetingScreen(false);
+              alert(`🚨 [AI 실시간 보안 차단]:\n${reason}`);
+            } else if (alertType === 'WARN_SCAM') {
+              setScamAlert(true);
+              alert(`⚠️ [AI 실시간 보안 경고]:\n${reason}`);
+            }
+          });
+
+          // D. 아고라 채널 합류 및 내 음성(PCM) 획득
           await agora.joinMeeting(
             (remoteUser) => {
               console.log('[App] Remote Mate User successfully joined Agora session:', remoteUser);
@@ -302,9 +316,9 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
             }
           );
 
-          // D. 아고라 PCM 청크 ➡️ 제미나이 실시간 번역 웹소켓 다이렉트 스트림 전송 결합
-          agora.registerAudioProcessor((pcmChunk) => {
-            gemini.sendAudioChunk(pcmChunk);
+          // E. 아고라 PCM 청크 ➡️ 제미나이 실시간 번역 웹소켓 다이렉트 스트림 전송 결합
+          agora.registerAudioProcessor((pcmChunkBase64) => {
+            gemini.sendAudioChunk(pcmChunkBase64);
           });
 
         } catch (err) {
@@ -852,6 +866,37 @@ export default function MatchingContainer({ user: _user }: MatchingContainerProp
                   ))
                 )}
               </div>
+
+              {/* 🎎 AI 한일 연애 문화 조율 코칭 팁 카드 & 퀵 인사말 칩 */}
+              {matchFound && (
+                <div className="px-4 py-2.5 bg-[#171426] border-t border-white/10 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-[9px] text-[#D4AF37] font-semibold">
+                      <Sparkles size={12} className="animate-pulse" />
+                      <span>{lang === 'ko' ? 'AI 한일 문화 코칭: 일본 메이트는 신중한 대답을 선호하므로 느린 답장도 안심하세요 🍵' : 'AI 日韓文化コーチ：韓国メ이트は迅速で積極的な表現を好みます 💌'}</span>
+                    </div>
+                  </div>
+                  
+                  {/* 정중체 경어 원클릭 인사말 퀵 버튼 */}
+                  <div className="flex gap-1.5 overflow-x-auto scrollbar-none pt-0.5">
+                    {[
+                      { label: lang === 'ko' ? '🇯🇵 정중한 첫 인사' : '🇰🇷 丁寧な挨拶', text: lang === 'ko' ? '初めまして！マッチングできて嬉しいです。よろしくお願いします😊' : '안녕하세요! 매칭되어 반갑습니다. 잘 부탁드려요😊' },
+                      { label: lang === 'ko' ? '☕ 데이트 조율' : '☕ デート調整', text: lang === 'ko' ? '機会があれば美味しいカフェでお話ししましょう！' : '기회가 된다면 예쁜 카페에서 이야기 나눠요!' },
+                      { label: lang === 'ko' ? '✈️ 방문 일정 질문' : '✈️ 訪問予定質問', text: lang === 'ko' ? '韓国へのご旅行や訪問の予定はありますか？' : '일본 방문 일정이나 여행 계획이 있으신가요?' }
+                    ].map((item, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setInputVal(item.text);
+                        }}
+                        className="px-2 py-1 rounded bg-white/5 border border-white/10 text-[8px] text-white/70 hover:text-white hover:bg-white/10 whitespace-nowrap transition-all"
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* AI 스캠 경고 배너 */}
               {scamAlert && (

@@ -252,7 +252,7 @@ export default function LandingPage() {
 
         <div className="relative z-20 pt-32 pb-32 px-6 max-w-6xl mx-auto w-full">
           <motion.p
-            className="text-white/40 text-[13px] sm:text-[14px] tracking-[0.2em] uppercase mb-20 text-center"
+            className="text-[#D4AF37]/40 text-[13px] sm:text-[14px] tracking-[0.2em] uppercase mb-20 text-center"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 1.2 }}
@@ -418,10 +418,10 @@ export default function LandingPage() {
               className="text-white font-light leading-[1.15] tracking-[-0.02em] mb-6"
               style={{ fontSize: 'clamp(28px, 6vw, 56px)' }}
             >
-              Choose Your Plan
+              플랜선택
             </h2>
             <p className="text-white/45 text-[15px] sm:text-[17px] leading-relaxed max-w-xl mx-auto">
-              Select the neural interface access tier that fits your needs.
+              당신에게 맞는 플랜을 선택하세요.
             </p>
           </motion.div>
 

@@ -32,6 +32,14 @@ export const COLLECTIONS = {
 
 // ── Data Types ──
 
+export interface TravelSchedule {
+  destination: 'KR' | 'JP';
+  city: string;
+  startDate: string;
+  endDate: string;
+  memo?: string;
+}
+
 export interface UserProfile {
   uid: string;
   email: string | null;
@@ -39,6 +47,7 @@ export interface UserProfile {
   photoURL: string | null;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+  travelSchedule?: TravelSchedule;
   subscription?: {
     planId: string;
     status: 'active' | 'cancelled' | 'expired';
