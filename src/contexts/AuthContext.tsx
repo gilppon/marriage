@@ -22,7 +22,6 @@ import {
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   GoogleAuthProvider,
-  OAuthProvider,
   type User,
 } from 'firebase/auth';
 import { auth } from '../lib/firebase';
@@ -38,7 +37,6 @@ interface AuthContextType {
 
   // Auth methods
   signInWithGoogle: () => Promise<void>;
-  signInWithApple: () => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -95,17 +93,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await signInWithPopup(auth, provider);
     } catch (err: any) {
       setError(err.message || 'Google 로그인 실패');
-      throw err;
-    }
-  };
-
-  const signInWithApple = async () => {
-    try {
-      setError(null);
-      const provider = new OAuthProvider('apple.com');
-      await signInWithPopup(auth, provider);
-    } catch (err: any) {
-      setError(err.message || 'Apple 로그인 실패');
       throw err;
     }
   };
@@ -201,7 +188,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         error,
         signInWithGoogle,
-        signInWithApple,
         signInWithEmail,
         signUpWithEmail,
         signOut,

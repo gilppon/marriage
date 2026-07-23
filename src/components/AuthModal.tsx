@@ -2,7 +2,7 @@
 // AuthModal — 로그인/회원가입 모달
 // ============================================================
 // 사이트 어디서든 열 수 있는 풀스크린 로그인 모달
-// Google, Apple, 이메일 로그인 지원
+// Google, 이메일 로그인 지원
 // ============================================================
 
 import { useState } from 'react';
@@ -15,7 +15,7 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ isOpen, onClose }: AuthModalProps) {
-  const { signInWithGoogle, signInWithApple, signInWithEmail, signUpWithEmail, error, clearError } =
+  const { signInWithGoogle, signInWithEmail, signUpWithEmail, error, clearError } =
     useAuth();
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
@@ -79,15 +79,6 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const handleGoogle = async () => {
     try {
       await signInWithGoogle();
-      onClose();
-    } catch {
-      // error handled in context
-    }
-  };
-
-  const handleApple = async () => {
-    try {
-      await signInWithApple();
       onClose();
     } catch {
       // error handled in context
@@ -165,14 +156,6 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
                 Continue with Google
-              </button>
-
-              <button
-                onClick={handleApple}
-                className="w-full h-[48px] rounded-lg bg-white/[0.07] border border-white/10 text-white text-[14px] font-medium flex items-center justify-center gap-3 hover:bg-white/[0.12] active:scale-[0.98] transition-all cursor-pointer"
-              >
-                <i className="bi bi-apple text-[18px]" />
-                Continue with Apple
               </button>
             </div>
 

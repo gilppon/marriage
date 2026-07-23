@@ -159,10 +159,10 @@ export default function LandingPage() {
 
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             {/* Left column */}
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 max-w-xl bg-black/40 backdrop-blur-md border border-white/10 p-6 sm:p-8 rounded-2xl">
               <h1
-                className="text-white font-light leading-[0.95] tracking-[-0.03em]"
-                style={{ fontSize: 'clamp(40px, 10vw, 100px)' }}
+                className="text-white font-light leading-[0.95] tracking-[-0.03em] drop-shadow-md"
+                style={{ fontSize: 'clamp(36px, 8vw, 80px)' }}
               >
                 <ScrambleIn text={hero.titleLeft[0]} delay={200} triggered={entranceComplete} />
                 <br />
@@ -170,7 +170,7 @@ export default function LandingPage() {
               </h1>
 
               <motion.p
-                className="max-w-sm text-[13px] sm:text-[15px] text-white/60 leading-relaxed"
+                className="text-[14px] sm:text-[16px] text-white/90 font-normal leading-relaxed drop-shadow-sm"
                 initial={{ opacity: 0, y: 25 }}
                 animate={entranceComplete ? { opacity: 1, y: 0 } : {}}
                 transition={{
@@ -185,7 +185,7 @@ export default function LandingPage() {
 
             {/* Right heading */}
             <h1
-              className="text-white font-light leading-[0.95] tracking-[-0.03em] text-left md:text-right"
+              className="text-white font-light leading-[0.95] tracking-[-0.03em] text-left md:text-right drop-shadow-md"
               style={{ fontSize: 'clamp(40px, 10vw, 100px)' }}
             >
               <ScrambleIn text={hero.titleRight[0]} delay={700} triggered={entranceComplete} />
@@ -222,10 +222,13 @@ export default function LandingPage() {
           }}
         />
 
+        {/* Dark dimming backdrop overlay for high contrast */}
+        <div className="absolute inset-0 bg-black/45 z-10" />
+
         {/* 3D text content */}
         <div className="relative z-20 max-w-5xl mx-auto" style={{ perspective: 400 }}>
           <motion.p
-            className="font-sans font-normal text-[22px] sm:text-[30px] md:text-[36px] lg:text-[42px] text-white leading-[1.35] tracking-[-0.02em] select-none px-6 sm:px-12 text-center"
+            className="font-sans font-medium text-[22px] sm:text-[30px] md:text-[36px] lg:text-[42px] text-amber-300 leading-[1.4] tracking-[-0.02em] select-none px-6 sm:px-12 text-center drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] bg-black/50 backdrop-blur-md border border-amber-500/20 py-8 rounded-3xl"
             style={{
               transform: transform3D,
               opacity: textOpacity,

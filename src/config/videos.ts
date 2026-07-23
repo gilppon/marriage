@@ -21,10 +21,10 @@ export const VIDEO_URLS = {
   section2: '/Network.mp4',
 
   // 성능 지표 섹션 — 자동재생, 음소거, 반복
-  metrics: 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260622_092455_089c54f8-3b03-4966-9df1-e9746063d0ef.mp4',
+  metrics: '/metr.mp4',
 
   // 기술/적응형 지능 섹션 — 자동재생, 음소거, 반복
-  technology: 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260622_095750_32a52ce0-2005-45c9-9093-41f03fde9530.mp4',
+  technology: '/tech.mp4',
 
   // 푸터 — 자동재생, 음소거, 반복
   footer: '/couple.mp4',
